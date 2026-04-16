@@ -1,46 +1,37 @@
 package com.dac.passwordmanager.controller;
 
+import java.io.File;
 import java.time.LocalDateTime;
 import javax.crypto.SecretKey;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.stream.Collectors;
-import org.springframework.beans.factory.annotation.Autowired;
+import java.util.*;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 import com.dac.passwordmanager.dto.PasswordCredentialRequestDTO;
+import com.dac.passwordmanager.dto.response.CredentialsDTO;
 import com.dac.passwordmanager.service.PasswordCredentialService;
 import com.dac.passwordmanager.service.UserService;
 import com.dac.passwordmanager.service.email.EmailService;
+import com.dac.passwordmanager.service.pdf.CreatePdfFile;
 import com.dac.passwordmanager.config.security.AesCipherConfig;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import lombok.RequiredArgsConstructor;
+
 import com.dac.passwordmanager.entity.MessageEntity;
 import com.dac.passwordmanager.entity.PasswordCredential;
+import com.dac.passwordmanager.entity.User;
 
+@RequiredArgsConstructor
 @Controller
 public class DashboardController {
+
     private final PasswordCredentialService passwordCredentialService;
     private final UserService userService;
     private final AesCipherConfig aesCipherConfig;
     private final EmailService emailService;
-
-    @Autowired
-    public DashboardController(PasswordCredentialService passwordCredentialService, UserService userService,
-            AesCipherConfig aesCipherConfig, EmailService emailService) {
-        this.passwordCredentialService = passwordCredentialService;
-        this.userService = userService;
-        this.aesCipherConfig = aesCipherConfig;
-        this.emailService = emailService;
-    }
+    private final CreatePdfFile createPdfFile;
 
     @GetMapping("/about")
     public String about() {
@@ -49,33 +40,17 @@ public class DashboardController {
 
     @GetMapping("/home")
     public String home(Model model, HttpSession session) throws Exception {
-        String userId = session.getAttribute("userId").toString();
-        List<PasswordCredential> passwords = passwordCredentialService.findByUser(userId);
-
+        Long userId = (Long) session.getAttribute("userId");
         SecretKey secretKey = (SecretKey) session.getAttribute("aesKey");
 
-        List<PasswordCredentialRequestDTO> passwordsDTO = passwords.stream().map(password -> {
-            PasswordCredentialRequestDTO passwordDTO = new PasswordCredentialRequestDTO();
-            passwordDTO.setId(password.getId());
-            passwordDTO.setSite(password.getSite());
-            passwordDTO.setUsername(password.getUsername());
-            try {
-                passwordDTO.setPassword(aesCipherConfig.DecipherPassword(password.getPassword(), secretKey));
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            return passwordDTO;
-        }).collect(Collectors.toList());
+        List<CredentialsDTO> passwords = passwordCredentialService.findByUser(userId, secretKey);
 
-        model.addAttribute("passwords", passwordsDTO);
-
-        /*
-         * User data
-         */
+        model.addAttribute("passwords", passwords);
 
         Map<String, String> user = new HashMap<>();
-        user.put("name", userService.getUserByTarjetaEmpleado(userId).get().getNombreCompleto());
-        user.put("card", userService.getUserByTarjetaEmpleado(userId).get().getTarjetaEmpleado());
+        User currentUser = userService.getUserById(userId).orElseThrow();
+        user.put("name", currentUser.getNombreCompleto());
+        user.put("email", currentUser.getEmail());
 
         model.addAttribute("user", user);
         return "home";
@@ -94,7 +69,7 @@ public class DashboardController {
         newPassword.setPassword(aesCipherConfig.CipherPassword(passwordCredential.getPassword(), secretKey));
         newPassword.setCreatedAt(LocalDateTime.now().toString());
         newPassword.setUpdatedAt(LocalDateTime.now().toString());
-        newPassword.setUser(userService.getUserByTarjetaEmpleado(session.getAttribute("userId").toString()).get());
+        newPassword.setUser(userService.getUserById((Long) session.getAttribute("userId")).get());
 
         passwordCredentialService.save(newPassword);
 
@@ -103,12 +78,12 @@ public class DashboardController {
          */
         MessageEntity message = new MessageEntity();
         message.setRecipient(session.getAttribute("email").toString());
-        message.setSubject("Nueva contraseña agregada");
-        message.setBody("Se ha agregado una nueva contraseña a tu cuenta<br>" + "<strong>Sitio:</strong> "
-                + passwordCredential.getSite() + "<br><strong>Usuario:</strong> "
+        message.setSubject("New password added");
+        message.setBody("A new password has been added to your account.<br>" + "<strong>Site:</strong> "
+                + passwordCredential.getSite() + "<br><strong>Username:</strong> "
                 + passwordCredential.getUsername());
         message.setUrl("http://localhost:8080/");
-        message.setButtonText("Ir al inicio");
+        message.setButtonText("Go to Dashboard");
         message.setDate(LocalDateTime.now().toString());
         message.setDevice(request.getHeader("User-Agent"));
         message.setIp(request.getRemoteAddr());
@@ -135,8 +110,8 @@ public class DashboardController {
         /*
          * Compare owner Id
          */
-        String ownerId = password.get().getUser().getTarjetaEmpleado().toString();
-        String sessionUserId = session.getAttribute("userId").toString();
+        Long ownerId = password.get().getUser().getId();
+        Long sessionUserId = (Long) session.getAttribute("userId");
 
         if (ownerId.equals(sessionUserId)) {
             passwordCredentialService.deleteCredentialById(password.get().getId());
@@ -163,8 +138,8 @@ public class DashboardController {
         /*
          * Compare owner Id
          */
-        String ownerId = password.get().getUser().getTarjetaEmpleado().toString();
-        String sessionUserId = session.getAttribute("userId").toString();
+        Long ownerId = password.get().getUser().getId();
+        Long sessionUserId = (Long) session.getAttribute("userId");
 
         if (ownerId.equals(sessionUserId)) {
             SecretKey secretKey = (SecretKey) session.getAttribute("aesKey");
@@ -180,12 +155,12 @@ public class DashboardController {
              */
             MessageEntity message = new MessageEntity();
             message.setRecipient(session.getAttribute("email").toString());
-            message.setSubject("Contraseña actualizada");
-            message.setBody("Se ha actualizado una contraseña a tu cuenta<br>" + "<strong>Sitio:</strong> "
-                    + password.get().getSite() + "<br><strong>Usuario:</strong> "
+            message.setSubject("Password updated");
+            message.setBody("A password in your account has been updated.<br>" + "<strong>Site:</strong> "
+                    + password.get().getSite() + "<br><strong>Username:</strong> "
                     + password.get().getUsername());
             message.setUrl("http://localhost:8080/");
-            message.setButtonText("Ver contraseña actualizada");
+            message.setButtonText("View updated password");
             message.setDate(LocalDateTime.now().toString());
             message.setDevice(request.getHeader("User-Agent"));
             message.setIp(request.getRemoteAddr());
@@ -196,5 +171,40 @@ public class DashboardController {
         }
 
         return "redirect:/home";
+    }
+
+    @GetMapping("/export")
+    public void export(HttpSession session, HttpServletResponse response, HttpServletRequest request) throws Exception {
+        response.setHeader("Content-Type", "application/pdf");
+
+        SecretKey secretKey = (SecretKey) session.getAttribute("aesKey");
+        Long userId = (Long) session.getAttribute("userId");
+
+        List<CredentialsDTO> passwords = passwordCredentialService
+                .findByUser(userId, secretKey);
+
+        /*
+         * Generate a temp file
+         */
+        User user = userService.getUserById((Long) session.getAttribute("userId")).get();
+        File tempFile = createPdfFile.createFile(passwords, user.getEmail(), user.getId().toString());
+
+        /*
+         * Send email confirmation
+         */
+        MessageEntity message = new MessageEntity();
+        message.setRecipient(session.getAttribute("email").toString());
+        message.setSubject("Passwords exported | SaveMyPass.dev");
+        message.setBody(
+                "Your passwords have been exported. <br> for decrypt the file you need to confirm your email in the file");
+        message.setUrl("http://localhost:8080/");
+        message.setFile(tempFile);
+        message.setButtonText("Go to SaveMyPass.dev");
+        message.setDate(LocalDateTime.now().toString());
+        message.setDevice(request.getHeader("User-Agent"));
+        message.setIp(request.getRemoteAddr());
+        message.setLocation(request.getRemoteHost());
+
+        emailService.sendConfirmationEmail(session.getAttribute("email").toString(), message);
     }
 }

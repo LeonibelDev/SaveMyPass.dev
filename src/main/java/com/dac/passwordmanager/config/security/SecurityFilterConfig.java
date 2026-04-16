@@ -42,7 +42,12 @@ public class SecurityFilterConfig {
                                 "/add",
                                 "/delete/**",
                                 "/update/**",
-                                "/recovery")
+                                "/recovery",
+                                "/export",
+                                "/css/**",
+                                "/js/**",
+                                "/images/**",
+                                "/profile")
                         .permitAll()
                         .anyRequest()
                         .authenticated())

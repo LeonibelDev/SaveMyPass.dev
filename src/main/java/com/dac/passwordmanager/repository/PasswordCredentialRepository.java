@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import com.dac.passwordmanager.entity.PasswordCredential;
 
 public interface PasswordCredentialRepository extends JpaRepository<PasswordCredential, UUID> {
-    List<PasswordCredential> findByUserTarjetaEmpleado(String tarjetaEmpleado);
+    List<PasswordCredential> findByUserId(Long userId);
 
     Optional<PasswordCredential> findById(UUID id);
 

@@ -1,5 +1,6 @@
 package com.dac.passwordmanager.entity;
 
+import java.io.File;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -15,6 +16,7 @@ public class MessageEntity {
     private String ip;
     private String location;
     private String device;
+    private File file;
 
     public MessageEntity() {
     }

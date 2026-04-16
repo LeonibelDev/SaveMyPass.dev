@@ -1,34 +1,30 @@
 package com.dac.passwordmanager.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.ui.Model;
-import com.dac.passwordmanager.dto.SignupRequestDTO;
+import org.springframework.validation.BindingResult;
+
 import com.dac.passwordmanager.config.security.KeyUtil;
-import com.dac.passwordmanager.dto.LoginRequestDTO;
+import com.dac.passwordmanager.dto.*;
 import com.dac.passwordmanager.entity.User;
 import com.dac.passwordmanager.service.UserService;
 import jakarta.servlet.http.HttpSession;
+import lombok.RequiredArgsConstructor;
+
 import java.util.Base64;
 import java.util.Optional;
 import javax.crypto.SecretKey;
 
+@RequiredArgsConstructor
 @Controller
 public class UserController {
 
     private final UserService userService;
-    private final PasswordEncoder passwordEncoder;
-
-    @Autowired
-    public UserController(UserService userService, PasswordEncoder passwordEncoder) {
-        this.userService = userService;
-        this.passwordEncoder = passwordEncoder;
-    }
 
     @GetMapping("/")
     public String index(
@@ -47,77 +43,18 @@ public class UserController {
 
     @PostMapping("/signup")
     public String signup_controller(
-            @ModelAttribute("signupForm") SignupRequestDTO signupRequestDTO,
+            @Validated @ModelAttribute("signupForm") SignupRequestDTO signupRequestDTO,
             Model model,
             RedirectAttributes redirectAttributes) {
 
-        /*
-         * Validar que las contrasenas intoducidas coincidan
-         */
-        if (!signupRequestDTO.getPassword().equals(signupRequestDTO.getPasswordConfirmacion())) {
-            model.addAttribute("error", "Las contraseñas no coinciden");
-            return "signup";
+        try {
+            userService.saveNewUser(signupRequestDTO);
+            redirectAttributes.addFlashAttribute("message", "Account created successfully");
+            return "redirect:/login";
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            return "redirect:/signup";
         }
-
-        /*
-         * Validar todos los inputs
-         */
-        if (signupRequestDTO.getTarjetaEmpleado().isEmpty() || signupRequestDTO.getNombreCompleto().isEmpty()
-                || signupRequestDTO.getEmail().isEmpty() || signupRequestDTO.getPassword().isEmpty()) {
-            model.addAttribute("error", "Todos los campos son obligatorios");
-
-            return "signup";
-        }
-
-        /*
-         * Validar que la tarjeta de empleado no exista
-         */
-        Optional<User> verifyUserByTarjetaEmpleado = userService
-                .getUserByTarjetaEmpleado(signupRequestDTO.getTarjetaEmpleado());
-        if (verifyUserByTarjetaEmpleado.isPresent()) {
-            model.addAttribute("error", "La tarjeta de empleado ya existe");
-            return "signup";
-        }
-
-        /*
-         * Validar que el correo no exista
-         */
-        Optional<User> verifyUserByEmail = userService.getUserByEmail(signupRequestDTO.getEmail());
-        if (verifyUserByEmail.isPresent()) {
-            model.addAttribute("error", "El correo ya existe");
-            return "signup";
-        }
-
-        /*
-         * Crear usuario
-         */
-        User user = new User();
-        user.setTarjetaEmpleado(signupRequestDTO.getTarjetaEmpleado());
-        user.setNombreCompleto(signupRequestDTO.getNombreCompleto());
-        user.setEmail(signupRequestDTO.getEmail());
-        user.setCedula(signupRequestDTO.getCedula());
-        user.setAdmin(false);
-
-        /*
-         * Encriptar password
-         */
-        String encodedPassword = passwordEncoder.encode(signupRequestDTO.getPassword());
-        user.setPassword(encodedPassword);
-
-        /*
-         * General Salt
-         */
-        byte[] salt = KeyUtil.generateSalt();
-        String saltBase64 = Base64.getEncoder().encodeToString(salt);
-        user.setSalt(saltBase64);
-
-        /*
-         * Guardar usuario
-         */
-        userService.saveUser(user);
-
-        redirectAttributes.addFlashAttribute("message", "Usuario registrado exitosamente");
-        return "redirect:/login";
     }
 
     @GetMapping("/login")
@@ -128,41 +65,55 @@ public class UserController {
     @PostMapping("/login")
     public String login_controller(
             @ModelAttribute("loginForm") LoginRequestDTO loginRequestDTO,
-            Model model,
+            RedirectAttributes redirectAttributes,
             HttpSession session) throws Exception {
 
-        /*
-         * Obtener usuario por tarjeta
-         */
-        Optional<User> user = userService.getUserByTarjetaEmpleado(loginRequestDTO.getTarjetaEmpleado());
-        if (user.isEmpty()) {
-            model.addAttribute("error", "Datos incorrectos");
+        try {
 
-            return "login";
+            User user = userService.login(loginRequestDTO);
+
+            /*
+             * Generate SecretKey
+             */
+            SecretKey secretKey = KeyUtil.deriveKey(loginRequestDTO.getPassword(),
+                    Base64.getDecoder().decode(user.getSalt()));
+
+            session.setAttribute("aesKey", secretKey);
+            session.setAttribute("userId", user.getId());
+            session.setAttribute("email", user.getEmail());
+
+            return "redirect:/home";
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            return "redirect:/login";
         }
 
-        /*
-         * Validar password
-         */
-        if (!passwordEncoder.matches(loginRequestDTO.getPassword(), user.get().getPassword())) {
+    }
 
-            model.addAttribute("error", "Datos incorrectos");
+    @GetMapping("/profile")
+    private String profile(HttpSession session, Model model) {
+        Long userId = (Long) session.getAttribute("userId");
+        Optional<User> user = userService.getUserById(userId);
+        model.addAttribute("user", user.get());
+        return "profile";
+    }
 
-            return "login";
+    @PostMapping("/profile")
+    public String updateUserData(@Validated @ModelAttribute ChangeUserPassword changeUserPassword,
+            HttpSession session, RedirectAttributes redirectAttributes, BindingResult result) {
+
+        try {
+            Long userId = (Long) session.getAttribute("userId");
+            SecretKey oldSecretKey = (SecretKey) session.getAttribute("aesKey");
+
+            SecretKey newSecretKey = userService.changePassword(changeUserPassword, userId, oldSecretKey);
+
+            session.setAttribute("aesKey", newSecretKey);
+            redirectAttributes.addFlashAttribute("message", "Password updated successfully and vault re-encrypted.");
+            return "redirect:/profile";
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            return "redirect:/profile";
         }
-
-        /*
-         * Generar SecretKey
-         */
-        byte[] salt = Base64.getDecoder().decode(user.get().getSalt());
-
-        SecretKey secretKey = KeyUtil.deriveKey(loginRequestDTO.getPassword(), salt);
-
-        session.setAttribute("aesKey", secretKey);
-        session.setAttribute("userId", user.get().getTarjetaEmpleado());
-        session.setAttribute("email", user.get().getEmail());
-
-        return "redirect:/home";
-
     }
 }

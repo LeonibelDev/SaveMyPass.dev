@@ -1,10 +1,13 @@
 package com.dac.passwordmanager.service.email;
 
 import jakarta.mail.internet.InternetAddress;
+import jakarta.mail.internet.MimeBodyPart;
 import jakarta.mail.internet.MimeMessage;
+import jakarta.mail.internet.MimeMultipart;
 import jakarta.mail.*;
 import com.dac.passwordmanager.entity.MessageEntity;
 
+import java.io.IOException;
 import java.util.Properties;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -22,7 +25,7 @@ public class EmailService {
     private String password;
 
     @Async
-    public void sendConfirmationEmail(String to, MessageEntity messageEntity) {
+    public void sendConfirmationEmail(String to, MessageEntity messageEntity) throws IOException {
         Properties props = new Properties();
         props.put("mail.smtp.auth", "true");
         props.put("mail.smtp.starttls.enable", "true");
@@ -37,11 +40,30 @@ public class EmailService {
             message.setFrom(new InternetAddress(username));
             message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(to));
             message.setSubject(messageEntity.getSubject());
-            message.setContent(EmailTemplate.getTemplate(messageEntity), "text/html; charset=utf-8");
-            Transport.send(message);
 
+            if (messageEntity.getFile() == null) {
+                message.setContent(EmailTemplate.getTemplate(messageEntity), "text/html; charset=utf-8");
+            } else {
+                BodyPart messageBodyPart = new MimeBodyPart();
+                messageBodyPart.setContent(EmailTemplate.getTemplate(messageEntity), "text/html; charset=utf-8");
+
+                MimeBodyPart filePart = new MimeBodyPart();
+                filePart.attachFile(messageEntity.getFile());
+
+                Multipart multipart = new MimeMultipart();
+                multipart.addBodyPart(messageBodyPart);
+                multipart.addBodyPart(filePart);
+
+                message.setContent(multipart);
+            }
+
+            Transport.send(message);
         } catch (MessagingException e) {
             e.printStackTrace();
+        } finally {
+            if (messageEntity.getFile() != null && messageEntity.getFile().exists()) {
+                messageEntity.getFile().delete();
+            }
         }
 
     }

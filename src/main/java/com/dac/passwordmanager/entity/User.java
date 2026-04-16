@@ -12,11 +12,8 @@ import lombok.*;
 public class User {
 
     @Id
-    @Column(name = "tarjeta_empleado", unique = true, nullable = false)
-    private String tarjetaEmpleado;
-
-    @Column(name = "cedula", unique = true, nullable = false)
-    private String cedula;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @Column(name = "nombre_completo", nullable = false)
     private String nombreCompleto;
