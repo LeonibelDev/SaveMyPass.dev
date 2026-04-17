@@ -1,5 +1,7 @@
 # SaveMyPass.dev — Secure Credential Management System
 
+![SaveMyPass Landing Page](./assets/screenshot-landing.png)
+
 ## Project Description
 
 SaveMyPass.dev is a web application designed for the centralized and secure management of access credentials. The system allows users to store, organize, and retrieve their passwords through an advanced security architecture that guarantees total data privacy.
@@ -18,6 +20,8 @@ This project implements a **Zero-Knowledge Architecture**. The solution is based
 ---
 
 ## Key Features
+
+![SaveMyPass Vault Dashboard](./assets/screenshot-vault.png)
 
 - **End-to-End Encryption**: Implementation of modern cryptographic standards to ensure that sensitive data never travels in plain text.
 - **Decoupled Architecture**: Robust backend based on microservices and a reactive frontend optimized for performance.
