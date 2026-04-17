@@ -1,6 +1,5 @@
 package com.dac.passwordmanager.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
@@ -25,32 +24,43 @@ public class PasswordCredentialService {
     private final AesCipherConfig aesCipherConfig;
 
     /*
-     * Get all passwords from a user
-     * 
-     * @param userId
-     * 
-     * @param secretKey
-     * 
-     * @return List<CredentialsDTO>
+     * [LEGACY — kept for changePassword re-encryption flow in UserService]
+     * Get all passwords for a user and decrypt them server-side.
      */
     @Transactional
     public List<CredentialsDTO> findByUser(Long userId, SecretKey secretKey) throws Exception {
         List<PasswordCredential> passwords = getAllCredentials(userId);
 
         return passwords.stream().map(password -> {
-            CredentialsDTO passwordDTO = new CredentialsDTO();
-            passwordDTO.setId(password.getId());
-            passwordDTO.setSite(password.getSite());
-            passwordDTO.setUsername(password.getUsername());
+            CredentialsDTO dto = new CredentialsDTO();
+            dto.setId(password.getId());
+            dto.setSite(password.getSite());
+            dto.setUsername(password.getUsername());
             try {
-                passwordDTO.setPassword(
-                        aesCipherConfig.DecipherPassword(password.getPassword(), secretKey));
+                dto.setPassword(aesCipherConfig.DecipherPassword(password.getPassword(), secretKey));
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            passwordDTO.setCreatedAt(password.getCreatedAt());
-            passwordDTO.setUpdatedAt(password.getUpdatedAt());
-            return passwordDTO;
+            dto.setCreatedAt(password.getCreatedAt());
+            dto.setUpdatedAt(password.getUpdatedAt());
+            return dto;
+        }).collect(Collectors.toList());
+    }
+
+    /*
+     * REST API method — returns credentials with the password as stored (AES-GCM Base64).
+     * Decryption is performed client-side in the Vue frontend using WebCrypto API.
+     */
+    public List<CredentialsDTO> findRawByUser(Long userId) {
+        return getAllCredentials(userId).stream().map(pc -> {
+            CredentialsDTO dto = new CredentialsDTO();
+            dto.setId(pc.getId());
+            dto.setSite(pc.getSite());
+            dto.setUsername(pc.getUsername());
+            dto.setPassword(pc.getPassword());  // encrypted — frontend decrypts
+            dto.setCreatedAt(pc.getCreatedAt());
+            dto.setUpdatedAt(pc.getUpdatedAt());
+            return dto;
         }).collect(Collectors.toList());
     }
 
@@ -69,5 +79,5 @@ public class PasswordCredentialService {
     public PasswordCredential save(PasswordCredential passwordCredential) {
         return passwordCredentialRepository.save(passwordCredential);
     }
-
 }
+

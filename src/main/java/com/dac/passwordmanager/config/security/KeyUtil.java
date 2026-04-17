@@ -9,7 +9,7 @@ import java.security.SecureRandom;
 public class KeyUtil {
 
     public static SecretKey deriveKey(String password, byte[] salt) throws Exception {
-        int iterations = 100_000;
+        int iterations = 600_000;
         int keyLength = 256;
 
         PBEKeySpec spec = new PBEKeySpec(
