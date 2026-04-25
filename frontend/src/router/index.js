@@ -12,7 +12,7 @@ const routes = [
     path: '/about',
     name: 'About',
     component: () => import('@/views/AboutView.vue'),
-    meta: { }, // public
+    meta: {}, // public
   },
   {
     path: '/login',
@@ -27,9 +27,21 @@ const routes = [
     meta: { guest: true },
   },
   {
-    path: '/home',
-    name: 'Home',
+    path: '/vault',
+    name: 'Vault',
     component: () => import('@/views/HomeView.vue'),
+    meta: { requiresAuth: true },
+  },
+  {
+    path: '/notes',
+    name: 'Notes',
+    component: () => import('@/views/NotesView.vue'),
+    meta: { requiresAuth: true },
+  },
+  {
+    path: '/export',
+    name: 'Export',
+    component: () => import('@/views/ExportView.vue'),
     meta: { requiresAuth: true },
   },
   {
@@ -38,7 +50,26 @@ const routes = [
     component: () => import('@/views/ProfileView.vue'),
     meta: { requiresAuth: true },
   },
+  {
+    path: '/credentials/:id',
+    name: 'CredentialDetail',
+    component: () => import('@/views/CredentialDetailView.vue'),
+    meta: { requiresAuth: true },
+  },
+  {
+    path: '/notes/new',
+    name: 'NewNote',
+    component: () => import('@/views/NewNoteView.vue'),
+    meta: { requiresAuth: true },
+  },
+  {
+    path: '/notes/:id',
+    name: 'NoteDetail',
+    component: () => import('@/views/NoteDetailView.vue'),
+    meta: { requiresAuth: true },
+  }
 ]
+
 
 const router = createRouter({
   history: createWebHistory(),
@@ -63,7 +94,7 @@ router.beforeEach(async (to) => {
   }
 
   if (to.meta.guest && auth.isAuthenticated) {
-    return { name: 'Home' }
+    return { name: 'Vault' }
   }
 })
 

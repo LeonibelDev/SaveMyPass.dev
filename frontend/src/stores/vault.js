@@ -103,8 +103,55 @@ export const useVaultStore = defineStore('vault', () => {
     doc.save('savemypass-export.pdf')
   }
 
+  async function exportVaultCSV() {
+    const escapeCSV = (value) => {
+      if (value === null || value === undefined) return "";
+      const strValue = String(value);
+      // If it contains quotes, commas, or newlines, wrap in quotes and escape internal quotes
+      if (/[",\n\r]/.test(strValue)) {
+        return `"${strValue.replace(/"/g, '""')}"`;
+      }
+      return strValue;
+    };
+
+    const rows = [
+      ['Site', 'Username', 'Password'], // Header
+      ...credentials.value.map(c => [
+        escapeCSV(c.site),
+        escapeCSV(c.username),
+        escapeCSV(c.password)
+      ])
+    ];
+
+    const csvContent = rows.map(row => row.join(',')).join('\n');
+
+    // Use \ufeff (BOM) to force Excel to read UTF-8 correctly
+    const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `savemypass-vault-${new Date().toISOString().split('T')[0]}.csv`;
+
+    document.body.appendChild(link); // Better practice for cross-browser compatibility
+    link.click();
+    document.body.removeChild(link);
+
+    URL.revokeObjectURL(url);
+  }
+
+  async function decryptPassword(encryptedText) {
+    const auth = useAuthStore()
+    try {
+      return await decrypt(auth.aesKey, encryptedText)
+    } catch (e) {
+      console.error('Decryption failed:', e)
+      return '[DECRYPTION FAILED]'
+    }
+  }
+
   return {
-    credentials, loading, error,
-    fetchCredentials, addCredential, updateCredential, removeCredential, exportVault,
+    credentials, loading, error, exportVaultCSV,
+    fetchCredentials, addCredential, updateCredential, removeCredential, exportVault, decryptPassword
   }
 })

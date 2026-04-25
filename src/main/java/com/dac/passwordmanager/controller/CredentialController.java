@@ -18,15 +18,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.File;
 import java.time.LocalDateTime;
-import java.util.Base64;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-
-import javax.crypto.SecretKey;
-import javax.crypto.spec.SecretKeySpec;
 
 @RestController
 @RequestMapping("/api/credentials")
@@ -100,6 +96,31 @@ public class CredentialController {
     }
 
     /**
+     * GET /api/credentials/{id}
+     * Returns a single credential by ID.
+     */
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponseDTO<CredentialsDTO>> getById(
+            @AuthenticationPrincipal Claims claims,
+            @PathVariable String id) {
+        Long userId = claims.get("userId", Long.class);
+
+        Optional<PasswordCredential> credential = passwordCredentialService.getCredentialById(UUID.fromString(id));
+
+        if (credential.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(ApiResponseDTO.error("Credential not found"));
+        }
+
+        if (!credential.get().getUser().getId().equals(userId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(ApiResponseDTO.error("Access denied"));
+        }
+
+        return ResponseEntity.ok(ApiResponseDTO.ok(mapToDTO(credential.get())));
+    }
+
+    /**
      * PUT /api/credentials/{id}
      * Update a credential.
      * The password field must arrive already AES-GCM encrypted.
@@ -121,7 +142,8 @@ public class CredentialController {
         }
 
         // Ownership check
-        if (!credential.get().getUser().getId().equals(userId)) {
+        Long ownerId = credential.get().getUser().getId();
+        if (ownerId == null || !ownerId.toString().equals(String.valueOf(userId))) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body(ApiResponseDTO.error("Access denied"));
         }
@@ -197,7 +219,7 @@ public class CredentialController {
         msg.setBody(body);
         msg.setUrl("http://localhost:5173/");
         msg.setButtonText("Go to SaveMyPass.dev");
-        msg.setDate(LocalDateTime.now().toString());
+        msg.setDate(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
         msg.setDevice(request.getHeader("User-Agent"));
         msg.setIp(request.getRemoteAddr());
         msg.setLocation(request.getRemoteHost());
