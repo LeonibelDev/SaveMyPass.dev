@@ -9,9 +9,11 @@ import java.util.UUID;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -74,6 +76,41 @@ public class NoteController {
 
         return ResponseEntity
                 .ok(ApiResponseDTO.ok("Note retrieved successfully", NoteResponseDTO.NoteResponseDTO(note.get())));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<ApiResponseDTO<NoteResponseDTO>> updateNote(@PathVariable UUID id,
+            @RequestBody NoteRequestDTO noteDTO,
+            @AuthenticationPrincipal Claims claims) {
+        Optional<Note> noteOptional = noteService.getNoteById(id);
+        if (noteOptional.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        Note note = noteOptional.get();
+        note.setTitle(noteDTO.getTitle());
+        note.setContent(noteDTO.getContent());
+        note.setCategory(noteDTO.getCategory());
+        note.setUpdatedAt(LocalDateTime.now());
+
+        Note updatedNote = noteService.save(note);
+
+        return ResponseEntity
+                .ok(ApiResponseDTO.ok("Note updated successfully", NoteResponseDTO.NoteResponseDTO(updatedNote)));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<ApiResponseDTO<Void>> deleteNote(@PathVariable UUID id,
+            @AuthenticationPrincipal Claims claims) {
+        Optional<Note> noteOptional = noteService.getNoteById(id);
+        if (noteOptional.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        noteService.deleteNote(id);
+
+        return ResponseEntity
+                .ok(ApiResponseDTO.ok("Note deleted successfully", null));
     }
 
 }

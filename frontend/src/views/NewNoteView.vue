@@ -30,7 +30,7 @@
         <div class="border-t border-slate-100 mb-8"></div>
 
         <!-- Body editor -->
-        <div ref="bodyRef" contenteditable="true" @input="onInput" @keydown.enter.prevent="insertNewLine"
+        <div ref="bodyRef" v-once contenteditable="true" @input="onInput" @keydown="handleKeydown"
           data-placeholder="Start writing your secure note…"
           class="w-full min-h-[400px] outline-none text-base text-slate-700 leading-relaxed font-medium empty:before:content-[attr(data-placeholder)] empty:before:text-slate-300">
         </div>
@@ -44,9 +44,9 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { notesApi } from '@/api/notes'
-
+import { useNotesStore } from '@/stores/notes'
 const router = useRouter()
+const notesStore = useNotesStore()
 
 const title = ref('')
 const body = ref('')
@@ -58,22 +58,26 @@ const onInput = () => {
   body.value = bodyRef.value.innerHTML
 }
 
-const insertNewLine = () => {
-  const selection = window.getSelection()
-  const range = selection.getRangeAt(0)
-
-  const br = document.createElement('br')
-  range.insertNode(br)
-
-  range.setStartAfter(br)
-  range.setEndAfter(br)
-  selection.removeAllRanges()
-  selection.addRange(range)
+const handleKeydown = (e) => {
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'b') {
+    e.preventDefault()
+    document.execCommand('bold', false, null)
+    onInput()
+  }
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'i') {
+    e.preventDefault()
+    document.execCommand('italic', false, null)
+    onInput()
+  }
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'u') {
+    e.preventDefault()
+    document.execCommand('underline', false, null)
+    onInput()
+  }
 }
 
-const save = () => {
-  notesApi.create({ title: title.value, content: body.value, category: 'note' }).then(() => {
-    router.push('/notes')
-  })
+const save = async () => {
+  await notesStore.addNote(title.value, body.value, 'note')
+  goBack()
 }
 </script>

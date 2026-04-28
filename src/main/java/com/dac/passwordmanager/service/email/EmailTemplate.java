@@ -1,10 +1,28 @@
 package com.dac.passwordmanager.service.email;
 
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 import com.dac.passwordmanager.entity.MessageEntity;
 
+import jakarta.servlet.http.HttpServletRequest;
+
 public class EmailTemplate {
+
+  public static MessageEntity buildMessage(String recipient, String subject,
+      String body, HttpServletRequest request) {
+    MessageEntity msg = new MessageEntity();
+    msg.setRecipient(recipient);
+    msg.setSubject(subject);
+    msg.setBody(body);
+    msg.setUrl("http://localhost:5173/");
+    msg.setButtonText("Go to SaveMyPass.dev");
+    msg.setDate(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+    msg.setDevice(request.getHeader("User-Agent"));
+    msg.setIp(request.getRemoteAddr());
+    msg.setLocation(request.getRemoteHost());
+    return msg;
+  }
 
   public static final String TEMPLATE = """
       <!DOCTYPE html>

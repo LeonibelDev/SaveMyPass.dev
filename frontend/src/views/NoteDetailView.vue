@@ -74,7 +74,7 @@
                 <div class="border-t border-slate-100 mb-8"></div>
 
                 <!-- Body editor -->
-                <div ref="bodyRef" contenteditable="true" v-html="body" @input="onInput"
+                <div ref="bodyRef" v-once contenteditable="true" @input="onInput" @keydown="handleKeydown"
                     data-placeholder="Start writing your secure note…"
                     class="w-full min-h-[400px] outline-none text-base text-slate-700 leading-relaxed font-medium empty:before:content-[attr(data-placeholder)] empty:before:text-slate-300">
                 </div>
@@ -112,12 +112,13 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch, nextTick } from 'vue'
+import { ref, computed, onMounted, nextTick } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { notesApi } from '@/api/notes'
+import { useNotesStore } from '@/stores/notes'
 
 const router = useRouter()
 const route = useRoute()
+const notesStore = useNotesStore()
 
 const noteId = route.params.id
 
@@ -154,22 +155,22 @@ const formattedDate = computed(() => {
 // Load note
 onMounted(async () => {
     try {
-        const note = await notesApi.getById(noteId)
-        title.value = note.data.data.title
-        body.value = note.data.data.content
-        originalTitle.value = note.data.data.title
-        originalBody.value = note.data.data.content
-        updatedAt.value = note.data.data.updatedAt ?? note.data.data.createdAt ?? null
+        const note = await notesStore.getNoteById(noteId)
+        title.value = note.title
+        body.value = note.content
+        originalTitle.value = note.title
+        originalBody.value = note.content
+        updatedAt.value = note.updatedAt ?? note.createdAt ?? null
 
-        // Set contenteditable content after DOM is ready
-        await nextTick()
-        if (bodyRef.value) {
-            bodyRef.value.innerHTML = note.content
-        }
     } catch (e) {
         error.value = true
     } finally {
         loading.value = false
+        // Set contenteditable content after DOM is ready
+        await nextTick()
+        if (bodyRef.value) {
+            bodyRef.value.innerHTML = originalBody.value
+        }
     }
 })
 
@@ -179,14 +180,34 @@ const onInput = () => {
     body.value = bodyRef.value.innerHTML
 }
 
+const handleKeydown = (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'b') {
+        e.preventDefault()
+        document.execCommand('bold', false, null)
+        onInput()
+    }
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'i') {
+        e.preventDefault()
+        document.execCommand('italic', false, null)
+        onInput()
+    }
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'u') {
+        e.preventDefault()
+        document.execCommand('underline', false, null)
+        onInput()
+    }
+}
+
 const save = async () => {
     if (!title.value.trim() || !isDirty.value) return
     saving.value = true
     try {
-        await notesApi.update(noteId, { title: title.value, content: body.value })
+        await notesStore.updateNote(noteId, title.value, body.value, 'note')
         originalTitle.value = title.value
         originalBody.value = body.value
         updatedAt.value = new Date().toISOString()
+    } catch (e) {
+        console.error('Failed to save note:', e)
     } finally {
         saving.value = false
     }
@@ -199,8 +220,10 @@ const confirmDelete = () => {
 const deleteNote = async () => {
     deleting.value = true
     try {
-        await notesApi.delete(noteId)
+        await notesStore.deleteNote(noteId)
         router.push('/notes')
+    } catch (e) {
+        console.error('Failed to delete note:', e)
     } finally {
         deleting.value = false
         showDeleteModal.value = false

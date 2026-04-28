@@ -7,9 +7,14 @@ import com.dac.passwordmanager.dto.LoginRequestDTO;
 import com.dac.passwordmanager.dto.SignupRequestDTO;
 import com.dac.passwordmanager.dto.response.ApiResponseDTO;
 import com.dac.passwordmanager.dto.response.AuthResponseDTO;
+import com.dac.passwordmanager.entity.MessageEntity;
 import com.dac.passwordmanager.entity.User;
 import com.dac.passwordmanager.service.UserService;
+import com.dac.passwordmanager.service.email.EmailService;
+import com.dac.passwordmanager.service.email.EmailTemplate;
+
 import io.jsonwebtoken.Claims;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -18,6 +23,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import javax.crypto.SecretKey;
+
+import java.io.IOException;
 import java.util.Base64;
 import java.util.Map;
 import java.util.Optional;
@@ -29,16 +36,34 @@ public class AuthController {
 
     private final UserService userService;
     private final JwtUtil jwtUtil;
+    private final EmailService emailService;
 
     /**
      * POST /api/auth/signup
      * Register a new user account.
+     * 
+     * @throws IOException
      */
     @PostMapping("/signup")
     public ResponseEntity<ApiResponseDTO<Void>> signup(
-            @Valid @RequestBody SignupRequestDTO dto) {
+            @Valid @RequestBody SignupRequestDTO dto, HttpServletRequest request) throws IOException {
         try {
-            userService.saveNewUser(dto);
+            User user = userService.saveNewUser(dto);
+
+            /*
+             *
+             * Send confirmation email
+             * 
+             */
+            MessageEntity message = EmailTemplate.buildMessage(user.getEmail(),
+                    "Hi " + user.getNombreCompleto() + ", Welcome to SaveMyPass.dev",
+                    "We're excited to have you on board! Here's what you can do with SaveMyPass.dev. " +
+                            "Please verify your email address to complete your registration. " +
+                            "Click the button below to confirm your account.",
+                    request);
+
+            emailService.sendConfirmationEmail(user.getEmail(), message);
+
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(ApiResponseDTO.ok("Account created successfully", null));
         } catch (IllegalArgumentException e) {
@@ -63,7 +88,7 @@ public class AuthController {
                     user.getId(),
                     user.getEmail(),
                     user.getNombreCompleto(),
-                    user.getSalt()   // frontend derives AES key locally with PBKDF2
+                    user.getSalt() // frontend derives AES key locally with PBKDF2
             );
 
             return ResponseEntity.ok(ApiResponseDTO.ok(response));
@@ -91,8 +116,7 @@ public class AuthController {
         Map<String, Object> data = Map.of(
                 "id", user.get().getId(),
                 "name", user.get().getNombreCompleto(),
-                "email", user.get().getEmail()
-        );
+                "email", user.get().getEmail());
         return ResponseEntity.ok(ApiResponseDTO.ok(data));
     }
 
@@ -102,7 +126,8 @@ public class AuthController {
      * The frontend must provide both the old and new AES-encrypted payloads.
      *
      * Body: { oldPassword, newPassword, confirmNewPassword, oldSalt, newSalt }
-     * Note: The frontend re-derives the AES key after receiving the new salt in the response.
+     * Note: The frontend re-derives the AES key after receiving the new salt in the
+     * response.
      */
     @PutMapping("/password")
     public ResponseEntity<ApiResponseDTO<AuthResponseDTO>> changePassword(
@@ -117,10 +142,9 @@ public class AuthController {
              */
             SecretKey oldSecretKey = KeyUtil.deriveKey(
                     dto.getOldPassword(),
-                    Base64.getDecoder().decode(user.getSalt())
-            );
+                    Base64.getDecoder().decode(user.getSalt()));
 
-            SecretKey newSecretKey = userService.changePassword(dto, userId, oldSecretKey);
+            userService.changePassword(dto, userId, oldSecretKey);
 
             /*
              * Re-fetch user to get updated salt
@@ -133,8 +157,7 @@ public class AuthController {
                     updatedUser.getId(),
                     updatedUser.getEmail(),
                     updatedUser.getNombreCompleto(),
-                    updatedUser.getSalt()
-            );
+                    updatedUser.getSalt());
 
             return ResponseEntity.ok(ApiResponseDTO.ok("Password updated. Please re-derive your vault key.", response));
         } catch (IllegalArgumentException e) {

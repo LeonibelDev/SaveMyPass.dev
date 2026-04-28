@@ -19,7 +19,14 @@
     </header>
 
     <!-- Main -->
-    <main class="flex-1 overflow-y-auto" v-if="notes.length === 0">
+    <main v-if="loading" class="flex-1 flex items-center justify-center">
+      <div class="flex flex-col items-center gap-4">
+        <i class="fa-solid fa-spinner animate-spin text-brand-orange text-2xl"></i>
+        <span class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Syncing with vault…</span>
+      </div>
+    </main>
+
+    <main v-else-if="notes.length === 0" class="flex-1 overflow-y-auto">
       <div class="max-w-4xl mx-auto py-16 px-6">
 
         <!-- Empty State -->
@@ -77,12 +84,14 @@
     <main v-else class="flex-1 overflow-y-auto">
       <div class="max-w-4xl mx-auto py-16 px-6">
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <div v-for="note in notes" :key="note.id" class="bg-white rounded-2xl border border-slate-100 p-5"
+          <div v-for="note in notes" :key="note.id"
+            class="bg-white rounded-2xl border border-slate-100 p-5 hover:border-brand-orange/20 cursor-pointer transition-all hover:shadow-lg hover:shadow-slate-200/50 group"
             @click="goToDetail(note.id)">
-            <h3 class="font-bold text-slate-800 text-sm mb-1">
+            <h3 class="font-bold text-slate-800 text-sm mb-1 group-hover:text-brand-orange transition-colors">
               {{ note.title }}
             </h3>
-            <p class="text-[11px] text-slate-400 leading-relaxed font-medium" v-html="note.content.substring(0, 100)">
+            <p class="text-[11px] text-slate-400 leading-relaxed font-medium line-clamp-3"
+              v-html="note.content.substring(0, 150)">
             </p>
           </div>
         </div>
@@ -92,26 +101,20 @@
 </template>
 
 <script setup>
-import { notesApi } from '@/api/notes'
 import { onMounted } from 'vue'
-import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { storeToRefs } from 'pinia'
+import { useNotesStore } from '../stores/notes'
 
+const useNotes = useNotesStore()
+const { notes, loading } = storeToRefs(useNotes)
 const router = useRouter()
-
-let notes = ref([])
-
-function getNotes() {
-  notesApi.getAll().then(response => {
-    notes.value = response.data.data
-  })
-}
 
 function goToDetail(id) {
   router.push(`/notes/${id}`)
 }
 
 onMounted(() => {
-  getNotes()
+  useNotes.fetchNotes()
 })
 </script>

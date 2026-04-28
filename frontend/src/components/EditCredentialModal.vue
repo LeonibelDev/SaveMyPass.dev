@@ -5,13 +5,6 @@
     <div class="relative w-full max-w-[420px]">
       <div class="bg-white rounded-[2rem] p-8 border border-slate-100">
 
-        <!-- Badge -->
-        <div
-          class="inline-flex items-center gap-1.5 bg-red-50 border border-red-200 text-red-500 rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-widest mb-4">
-          <i class="fa-solid fa-pen text-[9px]"></i>
-          Editing
-        </div>
-
         <h2 class="text-2xl font-black text-slate-900 tracking-tight mb-1">Edit credential</h2>
         <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-7">
           Update the info for this account
@@ -24,28 +17,24 @@
         </div>
 
         <!-- Site chip (read-only) -->
-        <div class="flex items-center gap-3 bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 mb-6">
-          <div
-            class="w-9 h-9 rounded-xl bg-white border border-slate-200 flex items-center justify-center flex-shrink-0 overflow-hidden">
-            <img
-              :src="`https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://${credential.site}&size=64`"
-              :alt="credential.site" class="w-5 h-5 object-contain" @error="$event.target.style.display = 'none'" />
-          </div>
-          <div class="flex-1 min-w-0">
-            <p class="text-sm font-black text-slate-900 tracking-tight truncate">{{ credential.site }}</p>
-            <p class="text-[11px] text-slate-400 font-medium">
-              Last updated {{ new Date(credential.updatedAt).toLocaleDateString(undefined, {
-                month: 'short', day:
-                  'numeric', year: 'numeric' }) }}
-            </p>
-          </div>
-          <span
-            class="inline-flex items-center gap-1 bg-emerald-50 border border-emerald-200 text-emerald-600 rounded-lg px-2.5 py-1 text-[10px] font-black uppercase tracking-widest flex-shrink-0">
-            <i class="fa-solid fa-check text-[9px]"></i> Saved
-          </span>
-        </div>
 
         <form @submit.prevent="handleSubmit" class="space-y-5">
+
+          <div class="space-y-1.5">
+            <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest ml-0.5">Site</label>
+            <div class="flex items-center gap-3 bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 mb-6">
+              <div
+                class="w-9 h-9 rounded-xl bg-white border border-slate-200 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                <img
+                  :src="`https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://${form.site}&size=64`"
+                  :alt="credential.site" class="w-5 h-5 object-contain" @error="$event.target.style.display = 'none'" />
+              </div>
+              <div class="flex-1 min-w-0">
+                <input class="text-sm font-black text-slate-900 tracking-tight truncate bg-slate-50"
+                  v-model="form.site"></input>
+              </div>
+            </div>
+          </div>
 
           <div class="space-y-1.5">
             <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest ml-0.5">Username /
@@ -62,10 +51,6 @@
           <div class="space-y-1.5">
             <div class="flex items-center justify-between ml-0.5 mb-0">
               <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Secret password</label>
-              <button type="button" @click="generatePassword"
-                class="text-[10px] font-black text-brand-orange hover:text-brand-orange-hover uppercase tracking-widest transition-colors">
-                Generate new
-              </button>
             </div>
             <div class="relative">
               <span class="absolute inset-y-0 left-0 pl-4 flex items-center text-slate-400 pointer-events-none">
