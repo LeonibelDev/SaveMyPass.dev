@@ -1,8 +1,9 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { credentialsApi } from '@/api/credentials'
+import { authApi } from '@/api/auth'
 import { useAuthStore } from './auth'
-import { decrypt, encrypt } from '@/crypto/aes'
+import { decrypt, encrypt, generateRandomSalt, deriveMasterKeyAndAuthHash } from '@/crypto/aes'
 import { jsPDF } from 'jspdf'
 import autoTable from 'jspdf-autotable'
 
@@ -27,12 +28,16 @@ export const useVaultStore = defineStore('vault', () => {
             return {
               ...item,
               password: await decrypt(auth.aesKey, item.password),
+              site: await decrypt(auth.aesKey, item.site),
+              username: await decrypt(auth.aesKey, item.username),
             }
           } catch (e) {
             console.error(`Decryption failed for item ${item.site}:`, e)
             return {
               ...item,
               password: '[DECRYPTION FAILED - INVALID KEY]',
+              site: '[DECRYPTION FAILED - INVALID KEY]',
+              username: '[DECRYPTION FAILED - INVALID KEY]',
             }
           }
         })
@@ -46,9 +51,12 @@ export const useVaultStore = defineStore('vault', () => {
 
   async function addCredential(site, username, plainPassword) {
     const auth = useAuthStore()
+
+    const encryptedSite = await encrypt(auth.aesKey, site)
+    const encryptedUsername = await encrypt(auth.aesKey, username)
     const encryptedPassword = await encrypt(auth.aesKey, plainPassword)
 
-    const res = await credentialsApi.add({ site, username, password: encryptedPassword })
+    const res = await credentialsApi.add({ site: encryptedSite, username: encryptedUsername, password: encryptedPassword })
     const newItem = res.data.data
 
     credentials.value.push({
@@ -59,9 +67,11 @@ export const useVaultStore = defineStore('vault', () => {
 
   async function updateCredential(id, site, username, plainPassword) {
     const auth = useAuthStore()
+    const encryptedSite = await encrypt(auth.aesKey, site)
+    const encryptedUsername = await encrypt(auth.aesKey, username)
     const encryptedPassword = await encrypt(auth.aesKey, plainPassword)
 
-    await credentialsApi.update(id, { site, username, password: encryptedPassword })
+    await credentialsApi.update(id, { site: encryptedSite, username: encryptedUsername, password: encryptedPassword })
 
     const idx = credentials.value.findIndex((c) => c.id === id)
     if (idx !== -1) {
@@ -140,9 +150,77 @@ export const useVaultStore = defineStore('vault', () => {
     URL.revokeObjectURL(url);
   }
 
-  async function decryptPassword(encryptedText) {
+  async function rotateVault(newPassword) {
     const auth = useAuthStore()
+    const { useNotesStore } = await import('./notes') // Lazy import to avoid circular dep
+    const notesStore = useNotesStore()
+
+    loading.value = true
+    error.value = null
+
     try {
+      // 1. Generate new salt and derive new key/authHash
+      const newSalt = generateRandomSalt()
+      const { key: newKey, authHash: newAuthHash } = await deriveMasterKeyAndAuthHash(newPassword, newSalt)
+
+      // 2. Re-encrypt all credentials
+      const rotatedCredentials = await Promise.all(
+        credentials.value.map(async (c) => ({
+          id: c.id,
+          site: await encrypt(newKey, c.site),
+          username: await encrypt(newKey, c.username),
+          password: await encrypt(newKey, c.password),
+        }))
+      )
+
+      // 3. Re-encrypt all notes
+      const rotatedNotes = await Promise.all(
+        notesStore.notes.map(async (n) => ({
+          id: n.id,
+          title: await encrypt(newKey, n.title),
+          content: await encrypt(newKey, n.content),
+          category: await encrypt(newKey, n.category),
+        }))
+      )
+
+      // 4. Send to server
+      const rotationPayload = {
+        newAuthHash,
+        newSalt,
+        credentials: rotatedCredentials,
+        notes: rotatedNotes,
+      }
+
+      await authApi.rotateVault(rotationPayload)
+
+      // 5. Success! Update local session
+      // We need to update the token too if the server returns a new one, 
+      // but here we assume the old JWT is still valid or we could re-login.
+      // Let's just update the key and salt in the auth store.
+      auth.updateKey({ token: auth.token, salt: newSalt }, newKey)
+
+      return true
+    } catch (e) {
+      console.error('Vault rotation failed:', e)
+      error.value = 'Failed to rotate vault. Please try again.'
+      throw e
+    } finally {
+      loading.value = false
+    }
+  }
+
+  // En vault.js
+  async function decryptField(encryptedText) {
+    const auth = useAuthStore()
+
+    // Ensure session is restored if key is missing but token exists
+    if (!auth.aesKey && auth.token) {
+      await auth.restoreSession()
+    }
+
+    try {
+      if (!encryptedText) return ''
+      if (!auth.aesKey) throw new Error("No decryption key available. Please log in again.")
       return await decrypt(auth.aesKey, encryptedText)
     } catch (e) {
       console.error('Decryption failed:', e)
@@ -152,6 +230,7 @@ export const useVaultStore = defineStore('vault', () => {
 
   return {
     credentials, loading, error, exportVaultCSV,
-    fetchCredentials, addCredential, updateCredential, removeCredential, exportVault, decryptPassword
+    fetchCredentials, addCredential, updateCredential, removeCredential, exportVault, decryptField,
+    rotateVault
   }
 })

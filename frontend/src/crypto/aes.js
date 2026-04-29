@@ -1,10 +1,10 @@
 /**
  * aes.js — WebCrypto AES-GCM + PBKDF2 module
- *
- * Mirrors exactly the Java AesCipherConfig + KeyUtil implementation:
- *  - PBKDF2WithHmacSHA256, 100,000 iterations, 256-bit key
- *  - AES/GCM/NoPadding, 12-byte random IV, 128-bit auth tag
- *  - Stored format: Base64(IV[12] + ciphertext)
+ * 
+ * True Zero-Knowledge Implementation:
+ *  - MasterKey: Derived via PBKDF2 (600,000 iterations) for local encryption.
+ *  - AuthHash: Derived from MasterKey via HMAC-SHA256 for server authentication.
+ *  - AES/GCM/NoPadding, 12-byte random IV, 128-bit auth tag.
  */
 
 const ITERATIONS = 600_000;
@@ -12,23 +12,26 @@ const KEY_LENGTH = 256;
 const IV_LENGTH = 12;
 
 /**
- * Derive an AES-GCM CryptoKey from the user's master password and their salt.
- * @param {string} password  — master password (plaintext)
- * @param {string} saltBase64 — Base64-encoded salt from the server
- * @returns {Promise<CryptoKey>}
+ * Derives both the Encryption Key and the Authentication Hash.
+ * @param {string} password 
+ * @param {string} saltBase64 
+ * @returns {Promise<{ key: CryptoKey, authHash: string }>}
  */
-export async function deriveKey(password, saltBase64) {
+export async function deriveMasterKeyAndAuthHash(password, saltBase64) {
   const saltBytes = Uint8Array.from(atob(saltBase64), (c) => c.charCodeAt(0));
+  const passwordBytes = new TextEncoder().encode(password);
 
+  // 1. Import raw password as key material
   const keyMaterial = await crypto.subtle.importKey(
     'raw',
-    new TextEncoder().encode(password),
+    passwordBytes,
     'PBKDF2',
     false,
     ['deriveKey']
   );
 
-  return crypto.subtle.deriveKey(
+  // 2. Derive the Master Encryption Key
+  const masterKey = await crypto.subtle.deriveKey(
     {
       name: 'PBKDF2',
       salt: saltBytes,
@@ -37,21 +40,45 @@ export async function deriveKey(password, saltBase64) {
     },
     keyMaterial,
     { name: 'AES-GCM', length: KEY_LENGTH },
-    true,           // extractable=true so we can persist to sessionStorage
+    true,
     ['encrypt', 'decrypt']
   );
+
+  // 3. Derive the Auth Hash (using the masterKey as secret for HMAC)
+  const rawMasterKey = await crypto.subtle.exportKey('raw', masterKey);
+  const hmacKey = await crypto.subtle.importKey(
+    'raw',
+    rawMasterKey,
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign']
+  );
+
+  const authSignature = await crypto.subtle.sign(
+    'HMAC',
+    hmacKey,
+    new TextEncoder().encode('SaveMyPass-Authentication-v1')
+  );
+
+  return {
+    key: masterKey,
+    authHash: btoa(String.fromCharCode(...new Uint8Array(authSignature)))
+  };
+}
+
+/**
+ * Generate a cryptographically secure random salt.
+ */
+export function generateRandomSalt() {
+  const salt = crypto.getRandomValues(new Uint8Array(16));
+  return btoa(String.fromCharCode(...salt));
 }
 
 /**
  * Encrypt a plaintext string with AES-GCM.
- * Returns Base64(IV[12] + ciphertext) — same format as Java's CipherPassword.
- * @param {CryptoKey} key
- * @param {string} plaintext
- * @returns {Promise<string>} Base64 ciphertext
  */
 export async function encrypt(key, plaintext) {
   const iv = crypto.getRandomValues(new Uint8Array(IV_LENGTH));
-
   const encrypted = await crypto.subtle.encrypt(
     { name: 'AES-GCM', iv, tagLength: 128 },
     key,
@@ -66,10 +93,7 @@ export async function encrypt(key, plaintext) {
 }
 
 /**
- * Decrypt a Base64(IV + ciphertext) string produced by Java's CipherPassword or encrypt().
- * @param {CryptoKey} key
- * @param {string} ciphertextBase64
- * @returns {Promise<string>} plaintext
+ * Decrypt a Base64 string.
  */
 export async function decrypt(key, ciphertextBase64) {
   const data = Uint8Array.from(atob(ciphertextBase64), (c) => c.charCodeAt(0));
@@ -86,9 +110,7 @@ export async function decrypt(key, ciphertextBase64) {
 }
 
 /**
- * Export a CryptoKey to a Base64 string for sessionStorage persistence.
- * @param {CryptoKey} key
- * @returns {Promise<string>} Base64
+ * Export key for sessionStorage.
  */
 export async function exportKey(key) {
   const raw = await crypto.subtle.exportKey('raw', key);
@@ -96,9 +118,7 @@ export async function exportKey(key) {
 }
 
 /**
- * Import a Base64 string from sessionStorage back into a CryptoKey.
- * @param {string} base64
- * @returns {Promise<CryptoKey>}
+ * Import key from sessionStorage.
  */
 export async function importKey(base64) {
   const raw = Uint8Array.from(atob(base64), (c) => c.charCodeAt(0));

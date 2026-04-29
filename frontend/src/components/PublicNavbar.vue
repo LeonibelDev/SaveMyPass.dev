@@ -1,43 +1,43 @@
 <template>
   <nav
-    class="sticky top-0 z-[100] w-full border-b border-slate-200/60 bg-white/70 backdrop-blur-xl transition-all duration-300">
-    <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+    class="sticky top-0 z-[100] w-full border-b border-slate-200/60 bg-white/80 backdrop-blur-xl transition-all duration-300">
+    <div class="max-w-7xl mx-auto px-6 h-16 sm:h-20 flex items-center justify-between">
       <!-- Logo -->
-      <router-link to="/" class="flex items-center gap-3 transition-transform hover:scale-[1.02] active:scale-95 group">
+      <router-link to="/" class="flex items-center gap-3 active:scale-95 transition-transform group">
         <div
-          class="w-10 h-10 bg-brand-orange text-white flex items-center justify-center rounded-xl shadow-lg shadow-orange-200 transition-all group-hover:rotate-6">
-          <i class="fa-solid fa-key text-lg"></i>
+          class="w-9 h-9 sm:w-10 sm:h-10 bg-brand-orange text-white flex items-center justify-center rounded-xl shadow-sm transition-all group-hover:rotate-3">
+          <i class="fa-solid fa-key text-[15px] sm:text-lg"></i>
         </div>
-        <span class="font-black text-slate-900 text-xl tracking-tighter">SaveMyPass<span
+        <span class="font-bold text-slate-900 text-lg sm:text-xl tracking-tight">SaveMyPass<span
             class="text-brand-orange">.dev</span></span>
       </router-link>
 
       <!-- Navigation Links -->
-      <div class="hidden md:flex items-center gap-10">
+      <div class="hidden md:flex items-center gap-8">
         <router-link v-if="isLanding" to="/about"
-          class="text-[10px] font-black text-slate-400 hover:text-brand-orange uppercase tracking-[0.2em] transition-colors">
-          Security Protocol
+          class="text-[14px] font-semibold text-slate-500 hover:text-brand-orange transition-colors">
+          Security
         </router-link>
-        <div class="h-4 w-px bg-slate-200"></div>
         <router-link to="/login"
-          class="text-[10px] font-black text-slate-500 hover:text-brand-orange uppercase tracking-[0.2em] transition-colors">
+          class="text-[14px] font-semibold text-slate-500 hover:text-brand-orange transition-colors">
           Log In
         </router-link>
         <router-link to="/signup"
-          class="bg-slate-900 text-white text-[10px] font-black uppercase tracking-[0.2em] px-8 py-3.5 rounded-xl hover:bg-slate-800 transition-all shadow-xl shadow-slate-200 active:scale-95">
+          class="bg-slate-900 text-white text-[14px] font-bold px-6 py-2.5 rounded-xl hover:bg-slate-800 transition-all active:scale-95">
           Sign Up
         </router-link>
       </div>
 
-      <!-- Mobile Toggle (Placeholder) -->
+      <!-- Mobile Toggle -->
       <div class="md:hidden">
-        <button class="w-10 h-10 flex items-center justify-center text-slate-500">
+        <button class="w-10 h-10 flex items-center justify-center text-slate-500 active:scale-90 transition-transform">
           <i class="fa-solid fa-bars-staggered text-xl"></i>
         </button>
       </div>
     </div>
   </nav>
 </template>
+
 
 <script setup>
 import { computed } from 'vue'

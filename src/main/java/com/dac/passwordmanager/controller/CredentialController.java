@@ -161,9 +161,7 @@ public class CredentialController {
             MessageEntity message = buildMessage(
                     user.getEmail(),
                     "Password updated",
-                    "A password has been updated.<br>"
-                            + "<strong>Site:</strong> " + updated.getSite()
-                            + "<br><strong>Username:</strong> " + updated.getUsername(),
+                    "Your password has been updated </br> If this was not you, please contact support immediately.",
                     request);
             emailService.sendConfirmationEmail(user.getEmail(), message);
         } catch (Exception ignored) {

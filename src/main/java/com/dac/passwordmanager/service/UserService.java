@@ -4,7 +4,6 @@ import javax.crypto.SecretKey;
 import java.util.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import com.dac.passwordmanager.config.security.*;
 import com.dac.passwordmanager.dto.*;
 import com.dac.passwordmanager.entity.*;
 import com.dac.passwordmanager.repository.UserRepository;
@@ -17,7 +16,7 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordCredentialService passwordCredentialService;
-    private final AesCipherConfig aesCipherConfig;
+    private final NoteService noteService;
     private final PasswordEncoder passwordEncoder;
 
     /*
@@ -48,8 +47,8 @@ public class UserService {
         user.setNombreCompleto(dto.getNombreCompleto());
         user.setEmail(dto.getEmail());
         user.setAdmin(false);
-        user.setPassword(passwordEncoder.encode(dto.getPassword()));
-        user.setSalt(Base64.getEncoder().encodeToString(KeyUtil.generateSalt()));
+        user.setPassword(passwordEncoder.encode(dto.getPassword())); // This is the AuthHash
+        user.setSalt(dto.getSalt());
 
         return userRepository.save(user);
     }
@@ -108,92 +107,55 @@ public class UserService {
         return userRepository.save(user);
     }
 
-    /*
-     * Change user salt and password
-     * 
-     * @param changeUserPassword
-     * 
-     * @param userId
-     * 
-     * return SecretKey -> new password + new salt
+    /**
+     * Z-K Vault Rotation
+     * Updates user's auth hash, salt, and all re-encrypted credentials/notes.
      */
     @Transactional
-    public SecretKey changePassword(ChangeUserPassword changeUserPassword, Long userId, SecretKey secretKey)
-            throws Exception {
+    public void rotateVault(VaultRotationRequestDTO dto, Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
-        /*
-         * Get user by id
-         */
-        Optional<User> user = userRepository.findById(userId);
-        if (user.isEmpty()) {
-            throw new IllegalArgumentException("User not found");
+        // 1. Update User Auth (AuthHash) and Salt
+        user.setPassword(passwordEncoder.encode(dto.getNewAuthHash()));
+        user.setSalt(dto.getNewSalt());
+        userRepository.save(user);
+
+        // 2. Update Credentials (Verify ownership)
+        if (dto.getCredentials() != null) {
+            for (VaultRotationRequestDTO.CredentialRotationDTO credDto : dto.getCredentials()) {
+                PasswordCredential pc = passwordCredentialService.getCredentialById(credDto.getId())
+                        .orElseThrow(() -> new IllegalArgumentException("Credential not found: " + credDto.getId()));
+                
+                if (!pc.getUser().getId().equals(userId)) {
+                    throw new SecurityException("Unauthorized access to credential: " + credDto.getId());
+                }
+
+                pc.setSite(credDto.getSite());
+                pc.setUsername(credDto.getUsername());
+                pc.setPassword(credDto.getPassword());
+                pc.setUpdatedAt(java.time.LocalDateTime.now().toString());
+                passwordCredentialService.save(pc);
+            }
         }
 
-        /*
-         * Validate current password
-         */
-        if (!passwordEncoder.matches(changeUserPassword.getOldPassword(), user.get().getPassword())) {
-            throw new IllegalArgumentException("Incorrect current password");
+        // 3. Update Notes (Verify ownership)
+        if (dto.getNotes() != null) {
+            for (VaultRotationRequestDTO.NoteRotationDTO noteDto : dto.getNotes()) {
+                Note note = noteService.getNoteById(noteDto.getId())
+                        .orElseThrow(() -> new IllegalArgumentException("Note not found: " + noteDto.getId()));
+
+                if (!note.getUser().getId().equals(userId)) {
+                    throw new SecurityException("Unauthorized access to note: " + noteDto.getId());
+                }
+
+                note.setTitle(noteDto.getTitle());
+                note.setContent(noteDto.getContent());
+                note.setCategory(noteDto.getCategory());
+                note.setUpdatedAt(java.time.LocalDateTime.now());
+                noteService.save(note);
+            }
         }
-
-        /*
-         * Validate that the new password and the confirmation password match
-         */
-        if (!changeUserPassword.getNewPassword().equals(changeUserPassword.getConfirmNewPassword())) {
-            throw new IllegalArgumentException("Passwords do not match");
-        }
-
-        /*
-         * Validate password length
-         */
-
-        if (changeUserPassword.getNewPassword().length() < 8) {
-            throw new IllegalArgumentException("Password must be at least 8 characters long");
-        }
-
-        /*
-         * Generate new salt
-         */
-        byte[] salt = KeyUtil.generateSalt();
-        String saltBase64 = Base64.getEncoder().encodeToString(salt);
-
-        user.get().setSalt(saltBase64);
-
-        /*
-         * Generate new Secret
-         */
-
-        SecretKey newSecretKey = KeyUtil.deriveKey(changeUserPassword.getNewPassword(), salt);
-
-        /*
-         * set new password with bcrypt
-         */
-        String newPassword = passwordEncoder.encode(changeUserPassword.getNewPassword());
-        user.get().setPassword(newPassword);
-
-        /*
-         * Update User
-         */
-
-        saveUser(user.get());
-
-        /*
-         * Get all user password
-         */
-
-        List<PasswordCredential> passwordCredentials = passwordCredentialService.getAllCredentials(userId);
-
-        for (PasswordCredential passwordCredential : passwordCredentials) {
-            String decriptedPassword = aesCipherConfig.DecipherPassword(passwordCredential.getPassword(), secretKey);
-
-            passwordCredential.setPassword(
-                    aesCipherConfig.CipherPassword(decriptedPassword, newSecretKey));
-
-            passwordCredentialService.save(passwordCredential);
-        }
-
-        return newSecretKey;
-
     }
 
 }

@@ -1,98 +1,93 @@
 <template>
-  <div class="bg-[#F8FAF9] min-h-screen flex flex-col text-slate-600 selection:bg-orange-100 selection:text-orange-950">
+  <div class="bg-[#F2F2F7] min-h-screen flex flex-col selection:bg-brand-orange/20">
 
-    <!-- Unified Public Navbar -->
+    <!-- Navbar -->
     <PublicNavbar />
 
+    <!-- Main -->
     <main class="flex-1 flex items-center justify-center p-6 py-12">
-      <div class="w-full max-w-[480px]">
-        <div class="bg-white rounded-[2.5rem] p-10 md:p-12 shadow-2xl shadow-slate-200 border border-slate-100">
+      <div class="w-full max-w-[480px] animate-fade-in">
+        <div class="bg-white/80 backdrop-blur-xl rounded-[32px] p-10 shadow-2xl border border-white/20">
+          
           <div class="text-center mb-10">
-            <h1 class="text-4xl font-black text-slate-900 tracking-tighter mb-2">Create account</h1>
-            <p class="text-slate-400 font-bold uppercase text-[10px] tracking-widest">Start your secure vault today</p>
+            <h1 class="text-[32px] font-bold text-slate-900 tracking-tight leading-tight">Create Account</h1>
+            <p class="text-[15px] text-slate-400 font-medium mt-2">Start your secure zero-knowledge vault</p>
           </div>
 
-          <div v-if="error" class="mb-6 p-4 bg-rose-50 border border-rose-100 rounded-2xl text-rose-500 text-sm font-medium text-center">{{ error }}</div>
-          <div v-if="success" class="mb-6 p-4 bg-emerald-50 border border-emerald-100 rounded-2xl text-emerald-500 text-sm font-medium text-center">{{ success }}</div>
+          <!-- Status Messages -->
+          <Transition name="fade">
+            <div v-if="error" class="mb-6 p-4 bg-rose-50 border border-rose-100 rounded-2xl text-rose-500 text-[14px] font-semibold text-center">
+              {{ error }}
+            </div>
+            <div v-else-if="success" class="mb-6 p-4 bg-emerald-50 border border-emerald-100 rounded-2xl text-emerald-500 text-[14px] font-semibold text-center">
+              {{ success }}
+            </div>
+          </Transition>
 
-          <form @submit.prevent="handleSignup" class="space-y-5">
-
-            <!-- Full Name -->
-            <div class="space-y-2">
-              <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Full Name</label>
+          <form @submit.prevent="handleSignup" class="space-y-4">
+            
+            <div class="space-y-1">
+              <label class="block text-[12px] font-bold text-slate-400 ml-1">Full Name</label>
               <div class="relative">
-                <span class="absolute inset-y-0 left-0 pl-4 flex items-center text-slate-500">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                  </svg>
+                <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400 pointer-events-none">
+                  <i class="fa-solid fa-user text-[14px]"></i>
                 </span>
                 <input v-model="form.nombreCompleto" type="text" required placeholder="John Doe"
-                  class="w-full bg-slate-50 border border-slate-100 rounded-2xl pl-12 pr-4 py-3.5 text-slate-900 focus:bg-white focus:border-brand-orange/30 focus:outline-none focus:ring-4 focus:ring-brand-orange/5 transition-all placeholder:text-slate-400 text-sm" />
+                  class="w-full bg-slate-100/50 border-none rounded-xl pl-10 pr-4 py-3.5 text-[15px] font-medium text-slate-900 focus:bg-white focus:ring-4 focus:ring-brand-orange/10 focus:outline-none transition-all placeholder:text-slate-400" />
               </div>
             </div>
 
-            <!-- Email -->
-            <div class="space-y-2">
-              <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Email Address</label>
+            <div class="space-y-1">
+              <label class="block text-[12px] font-bold text-slate-400 ml-1">Email Address</label>
               <div class="relative">
-                <span class="absolute inset-y-0 left-0 pl-4 flex items-center text-slate-500">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
-                  </svg>
+                <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400 pointer-events-none">
+                  <i class="fa-solid fa-envelope text-[14px]"></i>
                 </span>
                 <input v-model="form.email" type="email" required placeholder="name@example.com"
-                  class="w-full bg-slate-50 border border-slate-100 rounded-2xl pl-12 pr-4 py-3.5 text-slate-900 focus:bg-white focus:border-brand-orange/30 focus:outline-none focus:ring-4 focus:ring-brand-orange/5 transition-all placeholder:text-slate-400 text-sm" />
+                  class="w-full bg-slate-100/50 border-none rounded-xl pl-10 pr-4 py-3.5 text-[15px] font-medium text-slate-900 focus:bg-white focus:ring-4 focus:ring-brand-orange/10 focus:outline-none transition-all placeholder:text-slate-400" />
               </div>
             </div>
 
-            <!-- Passwords grid -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div class="space-y-2">
-                <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Password</label>
+              <div class="space-y-1">
+                <label class="block text-[12px] font-bold text-slate-400 ml-1">Master Password</label>
                 <div class="relative">
-                  <span class="absolute inset-y-0 left-0 pl-4 flex items-center text-slate-500">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                    </svg>
+                  <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400 pointer-events-none">
+                    <i class="fa-solid fa-lock text-[14px]"></i>
                   </span>
                   <input v-model="form.password" type="password" required placeholder="••••••••"
-                    class="w-full bg-slate-50 border border-slate-100 rounded-2xl pl-12 pr-4 py-3.5 text-slate-900 focus:bg-white focus:border-brand-orange/30 focus:outline-none focus:ring-4 focus:ring-brand-orange/5 transition-all placeholder:text-slate-400 text-sm" />
+                    class="w-full bg-slate-100/50 border-none rounded-xl pl-10 pr-4 py-3.5 text-[15px] font-medium text-slate-900 focus:bg-white focus:ring-4 focus:ring-brand-orange/10 focus:outline-none transition-all placeholder:text-slate-400" />
                 </div>
               </div>
-              <div class="space-y-2">
-                <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Confirm</label>
+              <div class="space-y-1">
+                <label class="block text-[12px] font-bold text-slate-400 ml-1">Confirm</label>
                 <div class="relative">
-                  <span class="absolute inset-y-0 left-0 pl-4 flex items-center text-slate-500">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                    </svg>
+                  <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400 pointer-events-none">
+                    <i class="fa-solid fa-shield-check text-[14px]"></i>
                   </span>
                   <input v-model="form.passwordConfirmacion" type="password" required placeholder="••••••••"
-                    class="w-full bg-slate-50 border border-slate-100 rounded-2xl pl-12 pr-4 py-3.5 text-slate-900 focus:bg-white focus:border-brand-orange/30 focus:outline-none focus:ring-4 focus:ring-brand-orange/5 transition-all placeholder:text-slate-400 text-sm" />
+                    class="w-full bg-slate-100/50 border-none rounded-xl pl-10 pr-4 py-3.5 text-[15px] font-medium text-slate-900 focus:bg-white focus:ring-4 focus:ring-brand-orange/10 focus:outline-none transition-all placeholder:text-slate-400" />
                 </div>
               </div>
             </div>
 
             <button type="submit" :disabled="loading"
-              class="w-full bg-brand-orange hover:bg-brand-orange-hover text-white font-bold py-4 rounded-2xl transition-all shadow-xl shadow-orange-100 active:scale-[0.98] mt-4 flex items-center justify-center gap-2 disabled:opacity-60">
-              <svg v-if="loading" class="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
-              </svg>
-              {{ loading ? 'Creating account...' : 'Create Account' }}
+              class="w-full mt-4 bg-brand-orange hover:bg-brand-orange-hover text-white font-bold py-3.5 rounded-xl transition-all active:scale-[0.98] flex items-center justify-center gap-2 text-[16px] shadow-sm disabled:opacity-60">
+              <i v-if="loading" class="fa-solid fa-circle-notch animate-spin"></i>
+              {{ loading ? 'Creating account...' : 'Sign Up' }}
             </button>
           </form>
 
-          <div class="mt-10 text-center">
-            <p class="text-sm text-slate-400 font-bold uppercase tracking-widest">
+          <div class="mt-8 text-center">
+            <p class="text-[14px] text-slate-400 font-medium">
               Already have an account?
-              <router-link to="/login" class="text-brand-orange hover:text-brand-orange-hover ml-1 transition-colors">Log in</router-link>
+              <router-link to="/login" class="text-brand-orange font-bold hover:opacity-70 transition-opacity ml-1">Log in</router-link>
             </p>
           </div>
         </div>
 
-        <p class="text-center mt-8 text-[10px] text-slate-600 font-bold tracking-[0.2em] uppercase">
-          Privacy first • Encryption by default
+        <p class="text-center mt-8 text-[11px] text-slate-400 font-bold uppercase tracking-[0.25em]">
+          Privacy First • Encryption by Default
         </p>
       </div>
     </main>
@@ -104,6 +99,7 @@ import { reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import PublicNavbar from '@/components/PublicNavbar.vue'
 import { authApi } from '@/api/auth'
+import { generateRandomSalt, deriveMasterKeyAndAuthHash } from '@/crypto/aes'
 
 const router = useRouter()
 const form = reactive({ nombreCompleto: '', email: '', password: '', passwordConfirmacion: '' })
@@ -112,11 +108,26 @@ const error = ref(null)
 const success = ref(null)
 
 async function handleSignup() {
+  if (form.password !== form.passwordConfirmacion) {
+    error.value = 'Passwords do not match'
+    return
+  }
+
   loading.value = true
   error.value = null
   success.value = null
   try {
-    await authApi.signup(form)
+    const salt = generateRandomSalt()
+    const { authHash } = await deriveMasterKeyAndAuthHash(form.password, salt)
+
+    await authApi.signup({
+      nombreCompleto: form.nombreCompleto,
+      email: form.email,
+      password: authHash,
+      passwordConfirmacion: authHash,
+      salt: salt
+    })
+
     success.value = 'Account created successfully!'
     setTimeout(() => router.push('/login'), 1500)
   } catch (e) {

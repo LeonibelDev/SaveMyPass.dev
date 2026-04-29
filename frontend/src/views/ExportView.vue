@@ -1,108 +1,97 @@
 <template>
-  <div class="flex-1 flex flex-col overflow-hidden bg-[#F7F8FA]">
+  <div class="flex-1 flex flex-col bg-[#F2F2F7] overflow-hidden selection:bg-brand-orange/20">
 
     <!-- Header -->
-    <header class="h-16 border-b border-slate-100 flex items-center px-6 justify-between flex-shrink-0 bg-white z-10">
-      <div class="flex items-center flex-1 max-w-xl">
-        <h1 class="text-sm font-black text-slate-800 tracking-tight uppercase">
-          Data Sovereignty
-        </h1>
+    <header class="h-16 border-b border-slate-200/60 bg-white/80 backdrop-blur-xl flex items-center px-6 z-20 flex-shrink-0">
+      <div class="max-w-4xl mx-auto w-full">
+        <h1 class="text-[17px] font-bold text-slate-900">Export Data</h1>
       </div>
     </header>
 
     <!-- Main -->
-    <main class="flex-1 overflow-y-auto">
-      <div class="max-w-4xl mx-auto py-12 px-6">
+    <main class="flex-1 overflow-y-auto py-8 px-4 sm:px-6 no-scrollbar">
+      <div class="max-w-2xl mx-auto animate-fade-in">
 
         <!-- Intro -->
-        <div class="mb-10">
-          <h2 class="text-xl font-black text-slate-800 tracking-tight mb-2">
-            Export your vault
-          </h2>
-          <p class="text-sm text-slate-400 font-medium max-w-xl leading-relaxed">
-            Download your encrypted or decrypted data for backup purposes. Your data belongs to you, and you should always have a local copy.
+        <div class="mb-8 px-2">
+          <h2 class="text-[24px] font-bold text-slate-900 tracking-tight mb-2">Export your vault</h2>
+          <p class="text-[15px] text-slate-500 font-medium leading-relaxed">
+            Download your encrypted or decrypted data for backup purposes. Your data belongs to you.
           </p>
         </div>
 
-        <!-- Cards -->
-        <div class="grid sm:grid-cols-2 md:grid-cols-3 gap-4">
-
-          <!-- PDF -->
-          <div class="p-5 rounded-2xl border border-slate-100 bg-white flex flex-col">
-            <div class="w-10 h-10 bg-rose-50 text-rose-500 rounded-xl flex items-center justify-center mb-4">
-              <i class="fa-solid fa-file-pdf text-sm"></i>
-            </div>
-
-            <h3 class="text-sm font-bold text-slate-800 mb-1">
-              PDF Backup
-            </h3>
-
-            <p class="text-[11px] text-slate-400 font-medium leading-relaxed mb-6">
-              Generate a formatted PDF document containing your credentials for offline storage.
+        <!-- Warning -->
+        <div class="mb-8 p-4 bg-orange-50 border border-orange-100 rounded-[20px] flex items-start gap-4">
+          <div class="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center flex-shrink-0">
+            <i class="fa-solid fa-triangle-exclamation text-brand-orange text-[16px]"></i>
+          </div>
+          <div>
+            <p class="text-[14px] text-brand-orange font-bold uppercase tracking-wider mb-1">Security Warning</p>
+            <p class="text-[13px] text-brand-orange/80 font-medium leading-relaxed">
+              Exported files are not protected by zero-knowledge encryption. Store them in a secure, encrypted location.
             </p>
+          </div>
+        </div>
 
-            <button
-              @click="handleExport"
-              :disabled="exporting"
-              class="mt-auto h-9 bg-slate-900 text-white font-bold rounded-xl text-[10px] uppercase tracking-widest active:scale-95 transition-all disabled:opacity-50"
-            >
-              {{ exporting ? 'Generating...' : 'Generate' }}
+        <!-- Export List -->
+        <div class="bg-white rounded-[24px] border border-slate-200/60 overflow-hidden shadow-sm divide-y divide-slate-100">
+          
+          <!-- PDF -->
+          <div class="p-6 flex items-center justify-between gap-6 hover:bg-slate-50 transition-colors group">
+            <div class="flex items-center gap-4">
+              <div class="w-12 h-12 rounded-2xl bg-rose-50 text-rose-500 flex items-center justify-center shadow-sm">
+                <i class="fa-solid fa-file-pdf text-xl"></i>
+              </div>
+              <div class="flex-1 min-w-0">
+                <h3 class="text-[16px] font-bold text-slate-900 mb-0.5">PDF Backup</h3>
+                <p class="text-[13px] text-slate-400 font-medium truncate">Formatted document for offline use</p>
+              </div>
+            </div>
+            <button @click="handleExport" :disabled="exporting"
+              class="h-10 px-5 bg-slate-900 text-white font-bold rounded-xl text-[14px] active:scale-95 transition-all disabled:opacity-40">
+              {{ exporting ? '...' : 'Export' }}
             </button>
           </div>
 
           <!-- JSON -->
-          <div class="p-5 rounded-2xl border border-slate-100 bg-white flex flex-col">
-            <div class="w-10 h-10 bg-blue-50 text-blue-500 rounded-xl flex items-center justify-center mb-4">
-              <i class="fa-solid fa-code text-sm"></i>
+          <div class="p-6 flex items-center justify-between gap-6 hover:bg-slate-50 transition-colors group">
+            <div class="flex items-center gap-4">
+              <div class="w-12 h-12 rounded-2xl bg-blue-50 text-blue-500 flex items-center justify-center shadow-sm">
+                <i class="fa-solid fa-code text-xl"></i>
+              </div>
+              <div class="flex-1 min-w-0">
+                <h3 class="text-[16px] font-bold text-slate-900 mb-0.5">JSON Snapshot</h3>
+                <p class="text-[13px] text-slate-400 font-medium truncate">Raw data for migration & auditing</p>
+              </div>
             </div>
-
-            <h3 class="text-sm font-bold text-slate-800 mb-1">
-              JSON Snapshot
-            </h3>
-
-            <p class="text-[11px] text-slate-400 font-medium leading-relaxed mb-6">
-              Export your raw vault data for migration or advanced auditing.
-            </p>
-
-            <button
-              @click="handleExportJSON"
-              :disabled="exporting"
-              class="mt-auto h-9 bg-slate-900 text-white font-bold rounded-xl text-[10px] uppercase tracking-widest active:scale-95 transition-all disabled:opacity-50"
-            >
+            <button @click="handleExportJSON"
+              class="h-10 px-5 bg-slate-900 text-white font-bold rounded-xl text-[14px] active:scale-95 transition-all">
               Download
             </button>
           </div>
 
           <!-- CSV -->
-          <div class="p-5 rounded-2xl border border-slate-100 bg-white flex flex-col">
-            <div class="w-10 h-10 bg-green-50 text-green-500 rounded-xl flex items-center justify-center mb-4">
-              <i class="fa-solid fa-table text-sm"></i>
+          <div class="p-6 flex items-center justify-between gap-6 hover:bg-slate-50 transition-colors group">
+            <div class="flex items-center gap-4">
+              <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center shadow-sm">
+                <i class="fa-solid fa-table text-xl"></i>
+              </div>
+              <div class="flex-1 min-w-0">
+                <h3 class="text-[16px] font-bold text-slate-900 mb-0.5">CSV Snapshot</h3>
+                <p class="text-[13px] text-slate-400 font-medium truncate">Spreadsheet-friendly format</p>
+              </div>
             </div>
-
-            <h3 class="text-sm font-bold text-slate-800 mb-1">
-              CSV Snapshot
-            </h3>
-
-            <p class="text-[11px] text-slate-400 font-medium leading-relaxed mb-6">
-              Export your vault data in a spreadsheet-friendly format.
-            </p>
-
-            <button
-              @click="handleExportCSV"
-              :disabled="exporting"
-              class="mt-auto h-9 bg-slate-900 text-white font-bold rounded-xl text-[10px] uppercase tracking-widest active:scale-95 transition-all disabled:opacity-50"
-            >
-              Download
+            <button @click="handleExportCSV" :disabled="exporting"
+              class="h-10 px-5 bg-slate-900 text-white font-bold rounded-xl text-[14px] active:scale-95 transition-all disabled:opacity-40">
+              {{ exporting ? '...' : 'Export' }}
             </button>
           </div>
 
         </div>
 
-        <!-- Warning -->
-        <div class="mt-10 p-4 rounded-xl bg-orange-50 border border-orange-100 flex items-start gap-3">
-          <i class="fa-solid fa-triangle-exclamation text-brand-orange mt-0.5 text-sm"></i>
-          <p class="text-[10px] text-brand-orange/80 font-bold uppercase tracking-widest leading-relaxed">
-            Exported files are not protected by zero-knowledge encryption. Store them securely.
+        <div class="mt-8 text-center px-6">
+          <p class="text-[12px] text-slate-400 font-medium leading-relaxed italic">
+            "Your data is your property. We provide the tools to ensure you never lose access."
           </p>
         </div>
 

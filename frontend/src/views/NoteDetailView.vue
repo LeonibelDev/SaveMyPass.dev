@@ -1,114 +1,131 @@
 <template>
-    <div class="flex-1 flex flex-col bg-[#F7F8FA] overflow-hidden selection:bg-orange-100 selection:text-orange-900">
+  <div class="flex-1 flex flex-col bg-[#F2F2F7] overflow-hidden selection:bg-brand-orange/20">
 
-        <!-- Header -->
-        <header class="h-16 border-b border-slate-100 bg-white flex items-center px-8 z-10 flex-shrink-0">
-            <div class="max-w-4xl mx-auto w-full flex items-center justify-between">
-                <button @click="goBack"
-                    class="flex items-center gap-2 text-slate-400 hover:text-slate-900 transition-colors group">
-                    <i class="fa-solid fa-arrow-left text-sm transition-transform group-hover:-translate-x-1"></i>
-                    <span class="text-[10px] font-black uppercase tracking-[0.2em]">Back to notes</span>
-                </button>
+    <!-- Header -->
+    <header class="h-16 border-b border-slate-200/60 bg-white/80 backdrop-blur-xl flex items-center px-4 sm:px-6 z-30 flex-shrink-0">
+      <div class="max-w-5xl mx-auto w-full flex items-center justify-between">
+        <button @click="goBack"
+          class="flex items-center gap-1 text-brand-orange hover:opacity-70 transition-opacity active:opacity-50">
+          <i class="fa-solid fa-chevron-left text-sm"></i>
+          <span class="text-[17px] font-medium">Notes</span>
+        </button>
 
-                <div class="flex items-center gap-3">
-                    <!-- Delete button -->
-                    <button @click="confirmDelete"
-                        class="h-9 px-4 text-slate-400 hover:text-red-500 hover:bg-red-50 font-bold rounded-2xl transition-all flex items-center gap-2 text-xs uppercase tracking-widest">
-                        <i class="fa-solid fa-trash text-[11px]"></i>
-                        Delete
-                    </button>
-
-                    <!-- Save button -->
-                    <button @click="save" :disabled="!title.trim() || !isDirty || saving"
-                        class="h-9 px-6 bg-brand-orange hover:bg-brand-orange-hover text-white font-bold rounded-2xl transition-all shadow-lg shadow-orange-100 active:scale-[0.98] disabled:opacity-40 flex items-center gap-2 text-xs uppercase tracking-widest">
-                        <i v-if="saving" class="fa-solid fa-spinner animate-spin text-[12px]"></i>
-                        <i v-else class="fa-solid fa-floppy-disk text-[12px]"></i>
-                        {{ saving ? 'Saving…' : 'Save note' }}
-                    </button>
-                </div>
-            </div>
-        </header>
-
-        <!-- Loading state -->
-        <div v-if="loading" class="flex-1 flex items-center justify-center">
-            <div class="flex flex-col items-center gap-4">
-                <i class="fa-solid fa-spinner animate-spin text-slate-300 text-2xl"></i>
-                <span class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-300">Loading note…</span>
-            </div>
+        <div class="flex items-center gap-3">
+          <button @click="save" :disabled="!isDirty || saving"
+            class="h-9 px-4 text-brand-orange font-bold text-[17px] disabled:opacity-30 transition-all active:opacity-50">
+            {{ saving ? 'Saving…' : 'Done' }}
+          </button>
+          <button @click="showDeleteModal = true"
+            class="w-9 h-9 rounded-full text-slate-300 hover:text-rose-500 hover:bg-rose-50 transition-all flex items-center justify-center active:scale-90">
+            <i class="fa-solid fa-trash-can text-[14px]"></i>
+          </button>
         </div>
+      </div>
+    </header>
 
-        <!-- Error state -->
-        <div v-else-if="error" class="flex-1 flex items-center justify-center">
-            <div class="flex flex-col items-center gap-4 text-center">
-                <i class="fa-solid fa-circle-exclamation text-red-300 text-3xl"></i>
-                <p class="text-sm font-semibold text-slate-500">Could not load this note.</p>
-                <button @click="goBack"
-                    class="text-[10px] font-black uppercase tracking-[0.2em] text-brand-orange hover:underline">
-                    Go back
-                </button>
-            </div>
+    <!-- Editor Container -->
+    <div class="flex-1 overflow-hidden flex flex-col">
+      
+      <!-- Formatting Toolbar -->
+      <div class="bg-white/50 backdrop-blur-md border-b border-slate-100 px-4 sm:px-8 py-2 sticky top-0 z-20 overflow-x-auto no-scrollbar">
+        <div class="max-w-5xl mx-auto flex items-center gap-1.5 min-w-max">
+          <button @click="format('bold')" 
+            class="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-slate-100 text-slate-600 transition-all active:scale-90" title="Bold">
+            <i class="fa-solid fa-bold text-[13px]"></i>
+          </button>
+          <button @click="format('italic')" 
+            class="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-slate-100 text-slate-600 transition-all active:scale-90" title="Italic">
+            <i class="fa-solid fa-italic text-[13px]"></i>
+          </button>
+          <button @click="format('underline')" 
+            class="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-slate-100 text-slate-600 transition-all active:scale-90" title="Underline">
+            <i class="fa-solid fa-underline text-[13px]"></i>
+          </button>
+          <div class="w-px h-5 bg-slate-200 mx-1.5"></div>
+          <button @click="format('insertUnorderedList')" 
+            class="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-slate-100 text-slate-600 transition-all active:scale-90" title="Bullets">
+            <i class="fa-solid fa-list-ul text-[13px]"></i>
+          </button>
+          <button @click="format('insertOrderedList')" 
+            class="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-slate-100 text-slate-600 transition-all active:scale-90" title="Numbers">
+            <i class="fa-solid fa-list-ol text-[13px]"></i>
+          </button>
+          <div class="w-px h-5 bg-slate-200 mx-1.5"></div>
+          <button @click="format('justifyLeft')" 
+            class="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-slate-100 text-slate-600 transition-all active:scale-90">
+            <i class="fa-solid fa-align-left text-[13px]"></i>
+          </button>
+          <button @click="format('justifyCenter')" 
+            class="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-slate-100 text-slate-600 transition-all active:scale-90">
+            <i class="fa-solid fa-align-center text-[13px]"></i>
+          </button>
         </div>
+      </div>
 
-        <!-- Editor -->
-        <main v-else class="flex-1 overflow-y-auto">
-            <div class="max-w-4xl mx-auto px-8 py-12">
+      <!-- Main Editor -->
+      <main v-if="loading" class="flex-1 flex items-center justify-center bg-white">
+        <div class="w-8 h-8 border-[3px] border-slate-200 border-t-brand-orange rounded-full animate-spin"></div>
+      </main>
 
-                <!-- Meta info -->
-                <div class="flex items-center gap-3 mb-8">
-                    <span class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-300">
-                        <i class="fa-regular fa-clock mr-1"></i>
-                        {{ formattedDate }}
-                    </span>
-                    <span v-if="isDirty"
-                        class="text-[10px] font-black uppercase tracking-[0.2em] text-orange-400 flex items-center gap-1">
-                        <span class="w-1.5 h-1.5 rounded-full bg-orange-400 inline-block"></span>
-                        Unsaved changes
-                    </span>
-                </div>
+      <main v-else-if="error" class="flex-1 flex items-center justify-center bg-white">
+        <div class="text-center px-6">
+          <div class="w-20 h-20 bg-rose-50 rounded-[24px] flex items-center justify-center mb-6 mx-auto">
+            <i class="fa-solid fa-circle-exclamation text-rose-500 text-3xl"></i>
+          </div>
+          <h3 class="font-bold text-slate-900 text-xl tracking-tight mb-2">Note not found</h3>
+          <p class="text-[15px] text-slate-400 font-medium mb-8">This note might have been removed.</p>
+          <button @click="goBack" class="text-brand-orange font-bold text-[17px]">Go back to notes</button>
+        </div>
+      </main>
 
-                <!-- Title input -->
-                <input v-model="title" type="text" placeholder="Note title…"
-                    class="w-full text-4xl font-black text-slate-900 tracking-tighter bg-transparent border-none outline-none placeholder:text-slate-200 mb-8" />
+      <main v-else class="flex-1 overflow-y-auto bg-white no-scrollbar">
+        <div class="max-w-4xl mx-auto px-6 sm:px-12 py-10 sm:py-16">
 
-                <!-- Divider -->
-                <div class="border-t border-slate-100 mb-8"></div>
+          <!-- Meta -->
+          <div class="flex items-center gap-3 mb-6 text-slate-300 text-[13px] font-medium">
+            <span>{{ formattedDate }}</span>
+            <span v-if="isDirty" class="text-brand-orange">• Unsaved</span>
+          </div>
 
-                <!-- Body editor -->
-                <div ref="bodyRef" v-once contenteditable="true" @input="onInput" @keydown="handleKeydown"
-                    data-placeholder="Start writing your secure note…"
-                    class="w-full min-h-[400px] outline-none text-base text-slate-700 leading-relaxed font-medium empty:before:content-[attr(data-placeholder)] empty:before:text-slate-300">
-                </div>
+          <!-- Title input -->
+          <input v-model="title" type="text" placeholder="Title"
+            class="w-full text-[32px] sm:text-[40px] font-bold text-slate-900 tracking-tight bg-transparent border-none outline-none placeholder:text-slate-100 mb-6 focus:placeholder:text-slate-50 transition-all" />
 
-            </div>
-        </main>
+          <!-- Body editor -->
+          <div ref="bodyRef" v-once contenteditable="true" @input="onInput" @keydown="handleKeydown"
+            data-placeholder="Start writing…"
+            class="w-full min-h-[500px] outline-none text-[17px] text-slate-700 leading-relaxed font-medium empty:before:content-[attr(data-placeholder)] empty:before:text-slate-200 editor-content">
+          </div>
 
-        <!-- Delete confirmation modal -->
-        <Transition name="fade">
-            <div v-if="showDeleteModal"
-                class="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm px-4"
-                @click.self="showDeleteModal = false">
-                <div class="bg-white rounded-3xl shadow-2xl p-8 max-w-sm w-full">
-                    <div class="w-12 h-12 rounded-2xl bg-red-50 flex items-center justify-center mb-5">
-                        <i class="fa-solid fa-trash text-red-400"></i>
-                    </div>
-                    <h3 class="text-lg font-black text-slate-900 mb-2">Delete this note?</h3>
-                    <p class="text-sm text-slate-400 mb-7">This action cannot be undone. The note will be permanently
-                        removed.</p>
-                    <div class="flex gap-3">
-                        <button @click="showDeleteModal = false"
-                            class="flex-1 h-10 rounded-2xl border border-slate-200 text-slate-500 text-xs font-black uppercase tracking-widest hover:bg-slate-50 transition-colors">
-                            Cancel
-                        </button>
-                        <button @click="deleteNote" :disabled="deleting"
-                            class="flex-1 h-10 rounded-2xl bg-red-500 hover:bg-red-600 text-white text-xs font-black uppercase tracking-widest transition-colors disabled:opacity-50">
-                            {{ deleting ? 'Deleting…' : 'Delete' }}
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </Transition>
-
+        </div>
+      </main>
     </div>
+
+    <!-- Delete Alert -->
+    <Transition name="fade">
+      <div v-if="showDeleteModal"
+        class="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/30 backdrop-blur-sm">
+        <div
+          class="bg-white/90 backdrop-blur-xl rounded-[24px] p-8 max-w-sm w-full shadow-2xl text-center border border-white/20">
+          <h3 class="text-[19px] font-bold text-slate-900 mb-2">Delete Note?</h3>
+          <p class="text-[14px] text-slate-500 font-medium leading-relaxed mb-8">
+            This action cannot be undone. Your encrypted note will be permanently removed.
+          </p>
+          <div class="flex flex-col gap-2">
+            <button @click="handleDelete"
+              class="w-full py-3.5 bg-rose-500 text-white rounded-xl font-bold text-[16px] active:opacity-70 transition-all">
+              Delete
+            </button>
+            <button @click="showDeleteModal = false"
+              class="w-full py-3.5 text-brand-orange font-semibold text-[16px] active:opacity-70 transition-all">
+              Cancel
+            </button>
+          </div>
+        </div>
+      </div>
+    </Transition>
+
+  </div>
 </template>
 
 <script setup>
@@ -133,7 +150,6 @@ const originalBody = ref('')
 const loading = ref(true)
 const error = ref(false)
 const saving = ref(false)
-const deleting = ref(false)
 const showDeleteModal = ref(false)
 
 const updatedAt = ref(null)
@@ -145,7 +161,7 @@ const isDirty = computed(() =>
 
 // Formatted date
 const formattedDate = computed(() => {
-    if (!updatedAt.value) return ''
+    if (!updatedAt.value) return 'Just now'
     return new Intl.DateTimeFormat('en-US', {
         month: 'short', day: 'numeric', year: 'numeric',
         hour: '2-digit', minute: '2-digit'
@@ -166,7 +182,6 @@ onMounted(async () => {
         error.value = true
     } finally {
         loading.value = false
-        // Set contenteditable content after DOM is ready
         await nextTick()
         if (bodyRef.value) {
             bodyRef.value.innerHTML = originalBody.value
@@ -180,21 +195,28 @@ const onInput = () => {
     body.value = bodyRef.value.innerHTML
 }
 
+const format = (cmd, val = null) => {
+    document.execCommand(cmd, false, val)
+    onInput()
+    if (bodyRef.value) bodyRef.value.focus()
+}
+
 const handleKeydown = (e) => {
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'b') {
         e.preventDefault()
-        document.execCommand('bold', false, null)
-        onInput()
+        format('bold')
     }
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'i') {
         e.preventDefault()
-        document.execCommand('italic', false, null)
-        onInput()
+        format('italic')
     }
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'u') {
         e.preventDefault()
-        document.execCommand('underline', false, null)
-        onInput()
+        format('underline')
+    }
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
+        e.preventDefault()
+        save()
     }
 }
 
@@ -213,32 +235,36 @@ const save = async () => {
     }
 }
 
-const confirmDelete = () => {
-    showDeleteModal.value = true
-}
-
-const deleteNote = async () => {
-    deleting.value = true
+const handleDelete = async () => {
     try {
         await notesStore.deleteNote(noteId)
         router.push('/notes')
     } catch (e) {
         console.error('Failed to delete note:', e)
     } finally {
-        deleting.value = false
         showDeleteModal.value = false
     }
 }
 </script>
 
 <style scoped>
-.fade-enter-active,
-.fade-leave-active {
-    transition: opacity 0.15s ease;
+.editor-content:focus {
+    outline: none;
 }
 
-.fade-enter-from,
-.fade-leave-to {
-    opacity: 0;
+:deep(.editor-content ul) {
+    list-style-type: disc;
+    padding-left: 1.5rem;
+    margin: 1rem 0;
+}
+
+:deep(.editor-content ol) {
+    list-style-type: decimal;
+    padding-left: 1.5rem;
+    margin: 1rem 0;
+}
+
+:deep(.editor-content b), :deep(.editor-content strong) {
+    font-weight: 700;
 }
 </style>

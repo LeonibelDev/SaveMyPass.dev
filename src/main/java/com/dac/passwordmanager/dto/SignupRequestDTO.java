@@ -26,6 +26,9 @@ public class SignupRequestDTO {
     @Size(min = 8, max = 255, message = "Password confirmation must be between 8 and 255 characters")
     private String passwordConfirmacion;
 
+    @NotBlank(message = "Salt is required")
+    private String salt;
+
     public SignupRequestDTO() {
     }
 }
