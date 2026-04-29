@@ -52,6 +52,8 @@ This project implements a **Zero-Knowledge Architecture**. The solution is based
 
 ## Security Model
 
+![SaveMyPass Key Derivation](./assets/mermaid.png)
+
 The fundamental pillar of SaveMyPass.dev is its cryptographic model:
 
 1. **Key Derivation (KDF)**: The **PBKDF2** algorithm is used with SHA-256 and an iteration factor of **600,000**, mitigating dictionary and specialized hardware attacks.
