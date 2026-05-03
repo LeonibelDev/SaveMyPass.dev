@@ -1,0 +1,1 @@
+.animate-fade-in[data-v-a68caf7d]{animation:fadeIn-a68caf7d .8s ease-out}.animate-float[data-v-a68caf7d]{animation:float-a68caf7d 6s ease-in-out infinite}@keyframes fadeIn-a68caf7d{0%{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}@keyframes float-a68caf7d{0%,to{transform:translateY(0)}50%{transform:translateY(-10px)}}
