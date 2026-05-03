@@ -6,6 +6,8 @@ target/
 
 ### Maven ###
 application.properties
+.mvn/
+.vim/
 
 ### STS ###
 .apt_generated

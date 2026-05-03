@@ -2,7 +2,7 @@
   <div class="flex h-screen bg-[#F2F2F7] overflow-hidden relative selection:bg-brand-orange/20">
     
     <!-- Mobile Header -->
-    <header v-if="auth.isAuthenticated && (route.meta.requiresAuth || route.name === 'Home')" 
+    <header v-if="showMobileHeader" 
       class="lg:hidden fixed top-0 left-0 right-0 h-16 bg-white/80 backdrop-blur-xl border-b border-slate-100 px-5 flex items-center justify-between z-30">
       <div class="flex items-center gap-3">
         <div class="w-8 h-8 bg-brand-orange rounded-[10px] flex items-center justify-center text-white shadow-sm">
@@ -16,9 +16,9 @@
     </header>
 
     <!-- Sidebar -->
-    <AppSidebar v-if="auth.isAuthenticated && (route.meta.requiresAuth || route.name === 'Home')" />
+    <AppSidebar v-if="auth.isAuthenticated && (route.meta.requiresAuth || route.name === 'Vault')" />
     
-    <div class="flex-1 flex flex-col overflow-hidden pt-16 lg:pt-0">
+    <div class="flex-1 flex flex-col overflow-y-auto" :class="{ 'pt-16 lg:pt-0': showMobileHeader }">
       <router-view v-slot="{ Component }">
         <transition name="page" mode="out-in">
           <component :is="Component" />
@@ -35,6 +35,7 @@
 </template>
 
 <script setup>
+import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useUiStore } from '@/stores/ui'
@@ -43,6 +44,10 @@ import AppSidebar from '@/components/AppSidebar.vue'
 const auth = useAuthStore()
 const route = useRoute()
 const ui = useUiStore()
+
+const showMobileHeader = computed(() => {
+  return auth.isAuthenticated && (route.meta.requiresAuth || route.name === 'Vault')
+})
 
 auth.restoreSession()
 </script>

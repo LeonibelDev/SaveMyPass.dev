@@ -1,6 +1,5 @@
 package com.dac.passwordmanager.service;
 
-import javax.crypto.SecretKey;
 import java.util.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -9,6 +8,7 @@ import com.dac.passwordmanager.entity.*;
 import com.dac.passwordmanager.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import java.time.LocalDateTime;
 
 @RequiredArgsConstructor
 @Service
@@ -126,7 +126,7 @@ public class UserService {
             for (VaultRotationRequestDTO.CredentialRotationDTO credDto : dto.getCredentials()) {
                 PasswordCredential pc = passwordCredentialService.getCredentialById(credDto.getId())
                         .orElseThrow(() -> new IllegalArgumentException("Credential not found: " + credDto.getId()));
-                
+
                 if (!pc.getUser().getId().equals(userId)) {
                     throw new SecurityException("Unauthorized access to credential: " + credDto.getId());
                 }
@@ -134,7 +134,7 @@ public class UserService {
                 pc.setSite(credDto.getSite());
                 pc.setUsername(credDto.getUsername());
                 pc.setPassword(credDto.getPassword());
-                pc.setUpdatedAt(java.time.LocalDateTime.now().toString());
+                pc.setUpdatedAt(LocalDateTime.now().toString());
                 passwordCredentialService.save(pc);
             }
         }
@@ -152,7 +152,7 @@ public class UserService {
                 note.setTitle(noteDto.getTitle());
                 note.setContent(noteDto.getContent());
                 note.setCategory(noteDto.getCategory());
-                note.setUpdatedAt(java.time.LocalDateTime.now());
+                note.setUpdatedAt(LocalDateTime.now());
                 noteService.save(note);
             }
         }

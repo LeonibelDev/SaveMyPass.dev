@@ -7,7 +7,7 @@
     <PublicNavbar />
 
     <!-- hero -->
-    <main class="relative pt-16 pb-24 z-10">
+    <main class="relative pt-16 pb-24 z-10 overflow-x-clip">
       <div class="max-w-7xl mx-auto px-6 text-center">
         
         <!-- badge -->
@@ -19,7 +19,7 @@
         </div>
 
         <div class="max-w-4xl mx-auto mb-16">
-          <h1 class="text-6xl md:text-[84px] font-bold tracking-tight text-slate-900 leading-[0.95] mb-8">
+          <h1 class="text-5xl sm:text-6xl md:text-[84px] font-bold tracking-tight text-slate-900 leading-[0.95] mb-8">
             The Secure Way to<br>
             <span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-orange to-rose-500">
               Manage Secrets.

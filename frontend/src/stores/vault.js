@@ -155,10 +155,24 @@ export const useVaultStore = defineStore('vault', () => {
     const { useNotesStore } = await import('./notes') // Lazy import to avoid circular dep
     const notesStore = useNotesStore()
 
-    loading.value = true
     error.value = null
 
     try {
+      // 0. Pre-fetch check: ensure we have the data to rotate
+      // We must fetch and decrypt everything with the OLD key first.
+      await fetchCredentials()
+      await notesStore.fetchNotes()
+
+      // Safety check: Don't rotate if decryption failed for any item
+      const hasFailedCredentials = credentials.value.some(c => String(c.password).includes('DECRYPTION FAILED'))
+      const hasFailedNotes = notesStore.notes.some(n => String(n.content).includes('DECRYPTION FAILED'))
+
+      if (hasFailedCredentials || hasFailedNotes) {
+        throw new Error("One or more items could not be decrypted. Aborting rotation to prevent data loss.")
+      }
+
+      loading.value = true
+
       // 1. Generate new salt and derive new key/authHash
       const newSalt = generateRandomSalt()
       const { key: newKey, authHash: newAuthHash } = await deriveMasterKeyAndAuthHash(newPassword, newSalt)
@@ -194,15 +208,12 @@ export const useVaultStore = defineStore('vault', () => {
       await authApi.rotateVault(rotationPayload)
 
       // 5. Success! Update local session
-      // We need to update the token too if the server returns a new one, 
-      // but here we assume the old JWT is still valid or we could re-login.
-      // Let's just update the key and salt in the auth store.
       auth.updateKey({ token: auth.token, salt: newSalt }, newKey)
 
       return true
     } catch (e) {
       console.error('Vault rotation failed:', e)
-      error.value = 'Failed to rotate vault. Please try again.'
+      error.value = e.message || 'Failed to rotate vault. Please try again.'
       throw e
     } finally {
       loading.value = false

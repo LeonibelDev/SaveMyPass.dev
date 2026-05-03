@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-[#F2F2F7] min-h-screen flex flex-col selection:bg-brand-orange/20">
+  <div class="bg-[#F2F2F7] min-h-screen flex flex-col selection:bg-brand-orange/20 overflow-x-hidden">
 
     <!-- Navbar -->
     <PublicNavbar />

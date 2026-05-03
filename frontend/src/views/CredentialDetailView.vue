@@ -209,10 +209,31 @@ function handleEditClose() {
   fetchDetails()
 }
 
-function copy(text, type) {
-  navigator.clipboard.writeText(text)
-  copyStatus.value = type
-  setTimeout(() => copyStatus.value = null, 3000)
+async function copy(text, type) {
+  try {
+    await navigator.clipboard.writeText(text)
+    copyStatus.value = type
+
+    setTimeout(() => {
+      copyStatus.value = null
+    }, 3000)
+
+    // clean clipboard after 6 seconds
+    setTimeout(async () => {
+      try {
+        const current = await navigator.clipboard.readText()
+
+        if (current === text) {
+          await navigator.clipboard.writeText('')
+        }
+      } catch (err) {
+        console.warn('Error cleaning clipboard:', err)
+      }
+    }, 6000)
+
+  } catch (err) {
+    console.error('Error copying to clipboard:', err)
+  }
 }
 
 function formatDate(dateStr) {

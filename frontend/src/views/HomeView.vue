@@ -4,7 +4,7 @@
     <!-- Header / Toolbar -->
     <header
       class="h-16 border-b border-slate-200/60 flex items-center px-4 sm:px-6 justify-between flex-shrink-0 bg-white/80 backdrop-blur-xl z-20">
-      
+
       <!-- Search -->
       <div class="relative flex-1 max-w-sm group">
         <span
@@ -27,7 +27,7 @@
       <div class="flex items-center gap-2 ml-3 sm:ml-4">
         <button @click="triggerExport" :disabled="exporting"
           class="h-9 w-9 sm:w-auto sm:px-4 flex items-center justify-center sm:gap-1.5 text-slate-600 hover:text-brand-orange hover:bg-orange-50 rounded-xl transition-all text-[12px] font-semibold border border-slate-200 hover:border-brand-orange/30 active:scale-95">
-          <i class="fa-solid fa-arrow-down-to-bracket text-[11px]"></i>
+          <i class="fa-solid fa-arrow-down text-[11px]"></i>
           <span class="hidden sm:inline">Export</span>
         </button>
         <button @click="showAddModal = true"
@@ -87,8 +87,7 @@
 
             <!-- Info -->
             <div class="flex-1 min-w-0">
-              <p
-                class="font-semibold text-[15px] text-slate-900 tracking-tight truncate leading-tight">
+              <p class="font-semibold text-[15px] text-slate-900 tracking-tight truncate leading-tight">
                 {{ cred.site }}
               </p>
               <p class="text-[13px] text-slate-400 font-medium truncate mt-0.5">
@@ -98,8 +97,7 @@
 
             <!-- Date + arrow -->
             <div class="flex items-center gap-3 flex-shrink-0">
-              <span
-                class="text-[12px] font-medium text-slate-300 hidden sm:block">
+              <span class="text-[12px] font-medium text-slate-300 hidden sm:block">
                 {{ new Date(cred.updatedAt).toLocaleDateString(undefined, {
                   month: 'short', day: 'numeric'
                 }) }}

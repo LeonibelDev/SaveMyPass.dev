@@ -49,8 +49,7 @@
         <div
           class="flex flex-col items-center justify-center text-center py-16 sm:py-24 bg-white rounded-[24px] border border-slate-200/60 shadow-sm px-6">
           <!-- Icon -->
-          <div
-            class="w-20 h-20 bg-orange-50 rounded-[20px] flex items-center justify-center mb-8">
+          <div class="w-20 h-20 bg-orange-50 rounded-[20px] flex items-center justify-center mb-8">
             <i class="fa-solid fa-note-sticky text-3xl text-brand-orange"></i>
           </div>
 
@@ -77,17 +76,19 @@
 
     <main v-else class="flex-1 overflow-y-auto px-4 sm:px-8 py-6 sm:py-10 no-scrollbar">
       <div class="max-w-7xl mx-auto">
-        
+
         <!-- Filter Info -->
         <div v-if="searchQuery" class="mb-6 flex items-center justify-between px-1">
           <p class="text-[13px] text-slate-400 font-semibold">
             Found <span class="text-slate-900">{{ filteredNotes.length }}</span> results
           </p>
-          <button @click="searchQuery = ''" class="text-[13px] font-bold text-brand-orange hover:underline">Clear</button>
+          <button @click="searchQuery = ''"
+            class="text-[13px] font-bold text-brand-orange hover:underline">Clear</button>
         </div>
 
         <div v-if="filteredNotes.length === 0" class="py-20 text-center">
-          <div class="w-16 h-16 bg-white rounded-[20px] border border-slate-200/60 flex items-center justify-center mx-auto mb-4 shadow-sm">
+          <div
+            class="w-16 h-16 bg-white rounded-[20px] border border-slate-200/60 flex items-center justify-center mx-auto mb-4 shadow-sm">
             <i class="fa-solid fa-magnifying-glass text-slate-200 text-xl"></i>
           </div>
           <h3 class="font-bold text-slate-900 mb-1">No notes match</h3>
@@ -98,7 +99,7 @@
           <div v-for="note in filteredNotes" :key="note.id"
             class="bg-white rounded-[20px] border border-slate-200/60 p-5 sm:p-6 hover:border-brand-orange/30 cursor-pointer transition-all hover:shadow-md active:bg-slate-50 group flex flex-col h-[200px] sm:h-[220px]"
             @click="goToDetail(note.id)">
-            
+
             <div class="flex justify-between items-start mb-4">
               <div
                 class="w-10 h-10 bg-slate-50 rounded-xl flex items-center justify-center group-hover:scale-105 transition-transform">
@@ -113,7 +114,7 @@
               class="font-bold text-slate-900 text-[16px] mb-2 group-hover:text-brand-orange transition-colors line-clamp-1 tracking-tight">
               {{ note.title }}
             </h3>
-            
+
             <p class="text-[13px] text-slate-400 leading-relaxed font-medium line-clamp-3 sm:line-clamp-4 flex-1"
               v-text="stripHtml(note.content)">
             </p>
