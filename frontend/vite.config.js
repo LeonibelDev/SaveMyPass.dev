@@ -3,7 +3,7 @@ import vue from '@vitejs/plugin-vue'
 import { fileURLToPath, URL } from 'node:url'
 
 export default defineConfig({
-  base: './', // Use relative paths for assets to support GitHub Pages subfolders
+  base: '/SaveMyPass.dev/', // Use repository name for GitHub Pages subfolder support
   plugins: [vue()],
   resolve: {
     alias: {
