@@ -43,7 +43,8 @@ public class SecurityFilterConfig {
                 config.setAllowedOrigins(List.of(
                                 "http://localhost:5173",
                                 "http://localhost:4173",
-                                "http://localhost"));
+                                "http://localhost",
+                                "https://leonibeldev.github.io"));
                 config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
                 config.setAllowedHeaders(List.of("*"));
                 config.setAllowCredentials(true);
