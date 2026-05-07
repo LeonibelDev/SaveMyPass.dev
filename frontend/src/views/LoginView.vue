@@ -5,12 +5,13 @@
     <PublicNavbar />
 
     <!-- Main -->
-    <main class="flex-1 flex items-center justify-center p-6">
+    <main class="flex-1 flex items-center justify-center p-6 py-12">
       <div class="w-full max-w-[420px] animate-fade-in">
         <div class="bg-white/80 backdrop-blur-xl rounded-[32px] p-10 shadow-2xl border border-white/20">
-          
+
           <div class="text-center mb-10">
-            <div class="w-16 h-16 bg-brand-orange text-white flex items-center justify-center rounded-[18px] shadow-sm mx-auto mb-6">
+            <div
+              class="w-16 h-16 bg-brand-orange text-white flex items-center justify-center rounded-[18px] shadow-sm mx-auto mb-6">
               <i class="fa-solid fa-key text-3xl"></i>
             </div>
             <h1 class="text-[32px] font-bold text-slate-900 tracking-tight leading-tight">Welcome Back</h1>
@@ -19,13 +20,14 @@
 
           <!-- Error -->
           <Transition name="fade">
-            <div v-if="error" class="mb-6 p-4 bg-rose-50 border border-rose-100 rounded-2xl text-rose-500 text-[14px] font-semibold text-center">
+            <div v-if="error"
+              class="mb-6 p-4 bg-rose-50 border border-rose-100 rounded-2xl text-rose-500 text-[14px] font-semibold text-center">
               {{ error }}
             </div>
           </Transition>
 
           <form @submit.prevent="handleLogin" class="space-y-4">
-            
+
             <div class="space-y-1">
               <label class="block text-[12px] font-bold text-slate-400 ml-1">Email Address</label>
               <div class="relative">
@@ -58,7 +60,9 @@
           <div class="mt-8 text-center">
             <p class="text-[14px] text-slate-400 font-medium">
               New here?
-              <router-link to="/signup" class="text-brand-orange font-bold hover:opacity-70 transition-opacity ml-1">Create an account</router-link>
+              <router-link to="/signup"
+                class="text-brand-orange font-bold hover:opacity-70 transition-opacity ml-1">Create an
+                account</router-link>
             </p>
           </div>
         </div>

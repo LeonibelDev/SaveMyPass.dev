@@ -2,7 +2,8 @@
   <div class="flex-1 flex flex-col bg-[#F2F2F7] overflow-hidden selection:bg-brand-orange/20">
 
     <!-- Header -->
-    <header class="h-16 border-b border-slate-200/60 bg-white/80 backdrop-blur-xl flex items-center px-6 z-20 flex-shrink-0">
+    <header
+      class="h-16 border-b border-slate-200/60 bg-white/80 backdrop-blur-xl flex items-center px-6 z-20 flex-shrink-0">
       <div class="max-w-4xl mx-auto w-full">
         <h1 class="text-[17px] font-bold text-slate-900">Export Data</h1>
       </div>
@@ -34,57 +35,81 @@
         </div>
 
         <!-- Export List -->
-        <div class="bg-white rounded-[24px] border border-slate-200/60 overflow-hidden shadow-sm divide-y divide-slate-100">
-          
-          <!-- PDF -->
-          <div class="p-6 flex items-center justify-between gap-6 hover:bg-slate-50 transition-colors group">
-            <div class="flex items-center gap-4">
-              <div class="w-12 h-12 rounded-2xl bg-rose-50 text-rose-500 flex items-center justify-center shadow-sm">
-                <i class="fa-solid fa-file-pdf text-xl"></i>
+        <!-- Export List -->
+        <div
+          class="bg-white rounded-[24px] border border-slate-200/60 overflow-hidden shadow-sm divide-y divide-slate-100">
+
+          <!-- Fila de Exportación (Repetir para PDF, JSON, CSV) -->
+          <div @click="handleExport"
+            class="relative p-5 sm:p-6 flex flex-row items-center justify-between gap-4 hover:bg-slate-50/80 transition-all cursor-pointer group">
+            <!-- Contenido Izquierdo: Icono + Texto -->
+            <div class="flex items-center gap-4 min-w-0">
+              <!-- Icono con contenedor responsivo -->
+              <div
+                class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-rose-50 text-rose-500 flex items-center justify-center shadow-sm flex-shrink-0 group-hover:scale-105 transition-transform duration-300">
+                <i class="fa-solid fa-file-pdf text-lg sm:text-xl"></i>
               </div>
+
               <div class="flex-1 min-w-0">
-                <h3 class="text-[16px] font-bold text-slate-900 mb-0.5">PDF Backup</h3>
-                <p class="text-[13px] text-slate-400 font-medium truncate">Formatted document for offline use</p>
+                <h3 class="text-[15px] sm:text-[16px] font-bold text-slate-900 mb-0.5 flex items-center gap-2">
+                  PDF Backup
+                  <!-- Tag sutil solo visible en desktop/tablet si quieres destacar algo -->
+                  <span
+                    class="hidden md:inline-block text-[10px] px-2 py-0.5 bg-slate-100 text-slate-500 rounded-full font-semibold uppercase tracking-wider">Offline</span>
+                </h3>
+                <p
+                  class="text-[12px] sm:text-[13px] text-slate-400 font-medium leading-tight line-clamp-1 sm:line-clamp-none">
+                  Formatted document for offline use
+                </p>
               </div>
             </div>
-            <button @click="handleExport" :disabled="exporting"
-              class="h-10 px-5 bg-slate-900 text-white font-bold rounded-xl text-[14px] active:scale-95 transition-all disabled:opacity-40">
-              {{ exporting ? '...' : 'Export' }}
-            </button>
+
+            <!-- Botón Derecho: Se adapta según dispositivo -->
+            <div class="flex items-center gap-3">
+              <!-- Texto de estado (opcional para tablet/PC) -->
+              <span v-if="exporting" class="hidden sm:inline text-[13px] font-medium text-slate-400 animate-pulse">
+                Processing...
+              </span>
+
+              <button :disabled="exporting"
+                class="h-9 sm:h-10 w-9 sm:w-auto sm:px-5 flex items-center justify-center bg-slate-900 text-white font-bold rounded-xl text-[13px] sm:text-[14px] hover:bg-brand-orange active:scale-95 transition-all shadow-sm disabled:opacity-50">
+                <span class="hidden sm:inline">{{ exporting ? 'Exporting...' : 'Export' }}</span>
+                <i class="fa-solid fa-download sm:hidden text-[14px]"></i> <!-- Solo icono en móvil -->
+                <i
+                  class="fa-solid fa-chevron-right hidden sm:inline ml-2 text-[10px] opacity-50 group-hover:translate-x-1 transition-transform"></i>
+              </button>
+            </div>
+
+            <!-- Overlay invisible para capturar el click en toda la fila -->
+            <!-- Esto permite que el cursor sea 'pointer' en toda el área -->
+            <div class="absolute inset-0 z-0"></div>
           </div>
 
-          <!-- JSON -->
-          <div class="p-6 flex items-center justify-between gap-6 hover:bg-slate-50 transition-colors group">
-            <div class="flex items-center gap-4">
-              <div class="w-12 h-12 rounded-2xl bg-blue-50 text-blue-500 flex items-center justify-center shadow-sm">
-                <i class="fa-solid fa-code text-xl"></i>
+          <!-- JSON Snapshot -->
+          <div @click="handleExportJSON"
+            class="relative p-5 sm:p-6 flex flex-row items-center justify-between gap-4 hover:bg-slate-50/80 transition-all cursor-pointer group">
+            <div class="flex items-center gap-4 min-w-0">
+              <div
+                class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-blue-50 text-blue-500 flex items-center justify-center shadow-sm flex-shrink-0 group-hover:scale-105 transition-transform duration-300">
+                <i class="fa-solid fa-code text-lg sm:text-xl"></i>
               </div>
               <div class="flex-1 min-w-0">
-                <h3 class="text-[16px] font-bold text-slate-900 mb-0.5">JSON Snapshot</h3>
-                <p class="text-[13px] text-slate-400 font-medium truncate">Raw data for migration & auditing</p>
+                <h3 class="text-[15px] sm:text-[16px] font-bold text-slate-900 mb-0.5">JSON Snapshot</h3>
+                <p
+                  class="text-[12px] sm:text-[13px] text-slate-400 font-medium leading-tight line-clamp-1 sm:line-clamp-none">
+                  Raw data for migration & auditing
+                </p>
               </div>
             </div>
-            <button @click="handleExportJSON"
-              class="h-10 px-5 bg-slate-900 text-white font-bold rounded-xl text-[14px] active:scale-95 transition-all">
-              Download
-            </button>
-          </div>
-
-          <!-- CSV -->
-          <div class="p-6 flex items-center justify-between gap-6 hover:bg-slate-50 transition-colors group">
-            <div class="flex items-center gap-4">
-              <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center shadow-sm">
-                <i class="fa-solid fa-table text-xl"></i>
-              </div>
-              <div class="flex-1 min-w-0">
-                <h3 class="text-[16px] font-bold text-slate-900 mb-0.5">CSV Snapshot</h3>
-                <p class="text-[13px] text-slate-400 font-medium truncate">Spreadsheet-friendly format</p>
-              </div>
+            <div class="flex items-center gap-3">
+              <button
+                class="h-9 sm:h-10 w-9 sm:w-auto sm:px-5 flex items-center justify-center bg-slate-900 text-white font-bold rounded-xl text-[13px] sm:text-[14px] hover:bg-brand-orange active:scale-95 transition-all shadow-sm">
+                <span class="hidden sm:inline">Download</span>
+                <i class="fa-solid fa-download sm:hidden text-[14px]"></i>
+                <i
+                  class="fa-solid fa-chevron-right hidden sm:inline ml-2 text-[10px] opacity-50 group-hover:translate-x-1 transition-transform"></i>
+              </button>
             </div>
-            <button @click="handleExportCSV" :disabled="exporting"
-              class="h-10 px-5 bg-slate-900 text-white font-bold rounded-xl text-[14px] active:scale-95 transition-all disabled:opacity-40">
-              {{ exporting ? '...' : 'Export' }}
-            </button>
           </div>
 
         </div>

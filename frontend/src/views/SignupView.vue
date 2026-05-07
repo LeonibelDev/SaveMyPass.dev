@@ -8,7 +8,7 @@
     <main class="flex-1 flex items-center justify-center p-6 py-12">
       <div class="w-full max-w-[480px] animate-fade-in">
         <div class="bg-white/80 backdrop-blur-xl rounded-[32px] p-10 shadow-2xl border border-white/20">
-          
+
           <div class="text-center mb-10">
             <h1 class="text-[32px] font-bold text-slate-900 tracking-tight leading-tight">Create Account</h1>
             <p class="text-[15px] text-slate-400 font-medium mt-2">Start your secure zero-knowledge vault</p>
@@ -16,16 +16,18 @@
 
           <!-- Status Messages -->
           <Transition name="fade">
-            <div v-if="error" class="mb-6 p-4 bg-rose-50 border border-rose-100 rounded-2xl text-rose-500 text-[14px] font-semibold text-center">
+            <div v-if="error"
+              class="mb-6 p-4 bg-rose-50 border border-rose-100 rounded-2xl text-rose-500 text-[14px] font-semibold text-center">
               {{ error }}
             </div>
-            <div v-else-if="success" class="mb-6 p-4 bg-emerald-50 border border-emerald-100 rounded-2xl text-emerald-500 text-[14px] font-semibold text-center">
+            <div v-else-if="success"
+              class="mb-6 p-4 bg-emerald-50 border border-emerald-100 rounded-2xl text-emerald-500 text-[14px] font-semibold text-center">
               {{ success }}
             </div>
           </Transition>
 
           <form @submit.prevent="handleSignup" class="space-y-4">
-            
+
             <div class="space-y-1">
               <label class="block text-[12px] font-bold text-slate-400 ml-1">Full Name</label>
               <div class="relative">
@@ -81,7 +83,8 @@
           <div class="mt-8 text-center">
             <p class="text-[14px] text-slate-400 font-medium">
               Already have an account?
-              <router-link to="/login" class="text-brand-orange font-bold hover:opacity-70 transition-opacity ml-1">Log in</router-link>
+              <router-link to="/login" class="text-brand-orange font-bold hover:opacity-70 transition-opacity ml-1">Log
+                in</router-link>
             </p>
           </div>
         </div>

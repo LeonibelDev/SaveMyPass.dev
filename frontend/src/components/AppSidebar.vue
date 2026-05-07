@@ -1,7 +1,10 @@
 <template>
   <aside
     class="fixed inset-y-0 left-0 z-50 w-72 bg-white/90 backdrop-blur-2xl border-r border-slate-200/50 flex flex-col h-screen transition-all duration-500 lg:static lg:translate-x-0"
-    :class="ui.isSidebarOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full lg:translate-x-0 shadow-none'">
+    :class="[
+      ui.isSidebarOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full lg:translate-x-0 shadow-none',
+      'h-[100dvh]' /* Use dynamic viewport height */
+    ]">
 
     <!-- Header / Logo -->
     <div class="h-16 px-6 flex items-center justify-between flex-shrink-0">
