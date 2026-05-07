@@ -23,7 +23,7 @@ api.interceptors.response.use(
     if (err.response?.status === 401) {
       const auth = useAuthStore()
       auth.logout()
-      window.location.href = '/login'
+      window.location.href = `${import.meta.env.BASE_URL}login`.replace(/\/+$/, '') || '/'
     }
     return Promise.reject(err)
   }

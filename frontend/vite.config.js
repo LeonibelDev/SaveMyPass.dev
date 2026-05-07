@@ -4,9 +4,17 @@ import { fileURLToPath, URL } from 'node:url'
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
-  return {
+  
+  // Validation: Ensure API URL is present during build
+  if (mode === 'production' && !env.VITE_API_URL) {
+    console.error('\x1b[31m%s\x1b[0m', 'ERR! VITE_API_URL is not defined in the environment variables.');
+    console.error('\x1b[33m%s\x1b[0m', 'Make sure to add it to GitHub Settings > Secrets and variables > Actions > Variables');
+    // We don't throw here to avoid breaking local production builds if intended, 
+    // but it will be visible in the logs.
+  }
 
-    base: '/SaveMyPass.dev/', // Use repository name for GitHub Pages subfolder support
+  return {
+    base: env.VITE_BASE_PATH || '/SaveMyPass.dev/', // Fallback to repo name
     plugins: [vue()],
     resolve: {
       alias: {

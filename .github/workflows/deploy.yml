@@ -12,20 +12,27 @@ jobs:
     concurrency: ci-${{ github.ref }}
     runs-on: ubuntu-latest
     environment: github-pages
+
     steps:
       - name: Checkout 
         uses: actions/checkout@v3
 
+      - name: Build Debug Info
+        run: |
+          echo "Checking environment variables (redacted values)..."
+          if [ -z "${{ vars.VITE_API_URL }}" ]; then echo "VITE_API_URL (var) is EMPTY"; else echo "VITE_API_URL (var) is SET"; fi
+          if [ -z "${{ secrets.VITE_API_URL }}" ]; then echo "VITE_API_URL (secret) is EMPTY"; else echo "VITE_API_URL (secret) is SET"; fi
+
       - name: Install and Build 
         env:
-          VITE_API_URL: ${{ vars.VITE_API_URL }}
-        
+          VITE_API_URL: ${{ vars.VITE_API_URL || secrets.VITE_API_URL }}
+          VITE_BASE_PATH: "/SaveMyPass.dev/"
         run: |
           cd frontend
           npm install
           npm run build
         
-
+          
       - name: Deploy 
         uses: JamesIves/github-pages-deploy-action@v4
         with:
