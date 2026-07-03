@@ -11,7 +11,6 @@ jobs:
   build-and-deploy:
     concurrency: ci-${{ github.ref }}
     runs-on: ubuntu-latest
-    environment: github-pages
 
     steps:
       - name: Checkout 
@@ -31,7 +30,6 @@ jobs:
           cd frontend
           npm install
           npm run build
-        
           
       - name: Deploy 
         uses: JamesIves/github-pages-deploy-action@v4

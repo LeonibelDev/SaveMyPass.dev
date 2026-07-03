@@ -4,7 +4,7 @@ import { fileURLToPath, URL } from 'node:url'
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
-  
+
   // Validation: Ensure API URL is present during build
   if (mode === 'production' && !env.VITE_API_URL) {
     console.error('\x1b[31m%s\x1b[0m', 'ERR! VITE_API_URL is not defined in the environment variables.');
