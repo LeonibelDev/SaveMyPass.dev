@@ -1,123 +1,109 @@
 <template>
-  <div class="flex-1 flex flex-col bg-[#F2F2F7] overflow-hidden selection:bg-brand-orange/20">
+  <div class="view-root">
 
-    <!-- Toolbar -->
-    <header
-      class="h-16 border-b border-slate-200/60 flex items-center px-4 sm:px-6 bg-white/80 backdrop-blur-xl z-20 flex-shrink-0">
-      <div class="max-w-4xl mx-auto w-full flex items-center justify-between">
-        <router-link to="/" class="flex items-center gap-2 text-brand-orange hover:opacity-70 transition-opacity group">
-          <i class="fa-solid fa-chevron-left text-sm"></i>
-          <span class="text-[17px] font-medium">Vault</span>
-        </router-link>
-
-        <div class="flex items-center gap-2">
-          <button @click="showEdit = true"
-            class="h-9 px-4 text-brand-orange font-semibold text-[17px] hover:opacity-70 transition-opacity">
+    <!-- Island Toolbar -->
+    <div class="island-toolbar-wrap">
+      <header class="island-toolbar island-toolbar--titled">
+        <div class="flex items-center gap-3">
+          <router-link to="/" class="btn-back">
+            <i class="fa-solid fa-chevron-left text-sm"></i>
+            <span>Vault</span>
+          </router-link>
+        </div>
+        <div class="toolbar-actions">
+          <button @click="showEdit = true" class="btn-ghost" style="color: #f97316; border-color: rgba(249,115,22,0.2);">
+            <i class="fa-solid fa-pen-to-square text-sm"></i>
             Edit
           </button>
-          <button @click="confirmDelete = true"
-            class="w-9 h-9 rounded-full text-slate-300 hover:text-rose-500 hover:bg-rose-50 transition-all flex items-center justify-center">
-            <i class="fa-solid fa-trash-can text-[13px]"></i>
+          <button @click="confirmDelete = true" class="btn-danger">
+            <i class="fa-solid fa-trash-can text-sm"></i>
           </button>
         </div>
-      </div>
-    </header>
+      </header>
+    </div>
 
-    <main class="flex-1 overflow-y-auto py-6 sm:py-8 px-4 sm:px-6 no-scrollbar">
-      <div class="max-w-2xl mx-auto">
+    <!-- Main -->
+    <main class="view-main">
+      <div class="content-container">
 
         <!-- Loading -->
-        <div v-if="loading" class="flex flex-col items-center justify-center py-40">
-          <div class="w-8 h-8 border-[3px] border-slate-200 border-t-brand-orange rounded-full animate-spin"></div>
+        <div v-if="loading" class="flex items-center justify-center py-40">
+          <div class="loading-spinner"></div>
         </div>
 
-        <div v-else-if="credential" class="animate-fade-in">
+        <div v-else-if="credential" class="space-y-4 max-w-2xl mx-auto" style="animation: fadeUp 0.3s ease forwards;">
 
-          <!-- Hero Section -->
-          <div class="flex flex-col items-center gap-4 mb-10 text-center">
-            <div
-              class="w-20 h-20 rounded-[22px] bg-white border border-slate-200/60 flex items-center justify-center shadow-sm overflow-hidden">
+          <!-- Hero -->
+          <div class="flex flex-col items-center gap-3 py-8 text-center">
+            <div class="hero-favicon">
               <img
                 :src="`https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://${credential.site}&size=128`"
-                :alt="credential.site" class="w-12 h-12 object-contain" @error="$event.target.style.display = 'none'" />
+                :alt="credential.site"
+                class="w-12 h-12 object-contain"
+                @error="$event.target.style.display = 'none'"
+              />
             </div>
-            <div class="min-w-0">
-              <h1 class="text-[28px] font-bold text-slate-900 tracking-tight leading-tight mb-1">
-                {{ credential.site }}
-              </h1>
-              <div class="flex items-center justify-center gap-2">
-                <span class="text-[13px] font-semibold text-emerald-500 flex items-center gap-1.5">
-                  <i class="fa-solid fa-lock text-[10px]"></i> Securely Encrypted
+            <div>
+              <h1 class="hero-title">{{ credential.site }}</h1>
+              <div class="hero-badges">
+                <span class="badge-encrypted">
+                  <i class="fa-solid fa-lock text-[9px]"></i> Encrypted
                 </span>
-                <span class="text-slate-300">•</span>
-                <a :href="`https://${credential.site}`" target="_blank"
-                  class="text-[13px] font-semibold text-brand-orange hover:opacity-70 transition-opacity">
-                  Open Site
+                <span class="badge-dot">·</span>
+                <a :href="`https://${credential.site}`" target="_blank" class="badge-link">
+                  Open Site <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
                 </a>
               </div>
             </div>
           </div>
 
-          <!-- Fields Group -->
-          <div
-            class="bg-white rounded-[20px] border border-slate-200/60 overflow-hidden mb-6 shadow-sm divide-y divide-slate-100">
-
-            <!-- Username Row -->
-            <div
-              class="px-5 py-4 flex items-center justify-between gap-4 hover:bg-slate-50 transition-colors active:bg-slate-100">
+          <!-- Fields island -->
+          <div class="island-card">
+            <!-- Username -->
+            <div class="info-row">
               <div class="flex-1 min-w-0">
-                <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">
-                  Username
-                </p>
-                <p class="text-[17px] font-medium text-slate-900 truncate select-all">
-                  {{ credential.username }}
-                </p>
+                <p class="info-label">Username</p>
+                <p class="info-value">{{ credential.username }}</p>
               </div>
-              <button @click="copy(credential.username, 'username')"
-                class="w-10 h-10 rounded-xl bg-slate-50 border border-slate-100 text-brand-orange flex items-center justify-center active:scale-90 transition-all">
-                <i v-if="copyStatus === 'username'" class="fa-solid fa-check"></i>
-                <i v-else class="fa-solid fa-copy text-[14px]"></i>
+              <button @click="copy(credential.username, 'username')" class="icon-btn icon-btn--orange">
+                <i v-if="copyStatus === 'username'" class="fa-solid fa-circle-check"></i>
+                <i v-else class="fa-solid fa-copy"></i>
               </button>
             </div>
 
-            <!-- Password Row -->
-            <div
-              class="px-5 py-4 flex items-center justify-between gap-4 hover:bg-slate-50 transition-colors active:bg-slate-100">
+            <!-- Password -->
+            <div class="info-row">
               <div class="flex-1 min-w-0">
-                <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">
-                  Password
-                </p>
-                <p class="text-[20px] font-bold text-slate-900 tracking-[0.2em] font-mono truncate">
+                <p class="info-label">Password</p>
+                <p class="info-value info-value--mono" style="font-size:20px; letter-spacing: 0.18em;">
                   {{ visible ? credential.password : '••••••••••••' }}
                 </p>
               </div>
               <div class="flex items-center gap-2">
-                <button @click="visible = !visible"
-                  class="w-10 h-10 rounded-xl bg-slate-50 border border-slate-100 text-slate-400 flex items-center justify-center active:scale-90 transition-all">
-                  <i :class="['fa-solid', visible ? 'fa-eye-slash' : 'fa-eye']" class="text-[14px]"></i>
+                <button @click="visible = !visible" class="icon-btn">
+                  <i :class="['fa-solid', visible ? 'fa-eye-slash' : 'fa-eye']"></i>
                 </button>
-                <button @click="copy(credential.password, 'password')"
-                  class="w-10 h-10 rounded-xl bg-slate-50 border border-slate-100 text-brand-orange flex items-center justify-center active:scale-90 transition-all">
-                  <i v-if="copyStatus === 'password'" class="fa-solid fa-check"></i>
-                  <i v-else class="fa-solid fa-copy text-[14px]"></i>
+                <button @click="copy(credential.password, 'password')" class="icon-btn icon-btn--orange">
+                  <i v-if="copyStatus === 'password'" class="fa-solid fa-circle-check"></i>
+                  <i v-else class="fa-solid fa-copy"></i>
                 </button>
               </div>
             </div>
           </div>
 
-          <!-- Notes Group -->
-          <div v-if="credential.notes"
-            class="bg-white rounded-[20px] border border-slate-200/60 px-5 py-4 mb-6 shadow-sm">
-            <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">
-              Private Note
+          <!-- Notes island -->
+          <div v-if="credential.notes" class="island-card island-card--padded">
+            <p class="info-label">Private Note</p>
+            <p style="font-size: 14px; color: #94a3b8; font-weight: 500; line-height: 1.6; margin-top: 6px;">
+              {{ credential.notes }}
             </p>
-            <p class="text-[15px] text-slate-700 leading-relaxed">{{ credential.notes }}</p>
           </div>
 
-          <!-- Meta Info -->
-          <div class="flex flex-col items-center gap-1.5 px-1 py-4 text-[12px] font-medium text-slate-400 text-center">
-            <p>Created {{ formatDate(credential.createdAt) }}</p>
-            <p>Last modified {{ formatDate(credential.updatedAt) }}</p>
+          <!-- Meta -->
+          <div class="meta-row">
+            <span>Created {{ formatDate(credential.createdAt) }}</span>
+            <span>·</span>
+            <span>Modified {{ formatDate(credential.updatedAt) }}</span>
           </div>
 
         </div>
@@ -127,34 +113,25 @@
     <!-- Modals -->
     <EditCredentialModal v-if="showEdit" :credential="credential" @close="handleEditClose" />
 
-    <!-- Delete Alert -->
-    <transition name="fade">
-      <div v-if="confirmDelete"
-        class="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/30 backdrop-blur-sm">
-        <div
-          class="bg-white/90 backdrop-blur-xl rounded-[24px] p-8 max-w-sm w-full shadow-2xl text-center border border-white/20">
-          <h3 class="text-[19px] font-bold text-slate-900 mb-2">Delete Credential?</h3>
-          <p class="text-[14px] text-slate-500 font-medium leading-relaxed mb-8">
-            This action cannot be undone. Your encrypted data will be removed.
-          </p>
-          <div class="flex flex-col gap-2">
-            <button @click="handleDelete"
-              class="w-full py-3.5 bg-rose-500 text-white rounded-xl font-bold text-[16px] active:opacity-70 transition-all">
-              Delete
-            </button>
-            <button @click="confirmDelete = false"
-              class="w-full py-3.5 text-brand-orange font-semibold text-[16px] active:opacity-70 transition-all">
-              Cancel
-            </button>
+    <!-- Floating island delete dialog (no backdrop!) -->
+    <Transition name="dialog-slide">
+      <div v-if="confirmDelete" class="island-dialog-wrap">
+        <div class="island-dialog">
+          <div class="dialog-icon">
+            <i class="fa-solid fa-trash-can"></i>
+          </div>
+          <h3 class="dialog-title">Delete Credential?</h3>
+          <p class="dialog-desc">This action cannot be undone. Your encrypted data will be permanently removed.</p>
+          <div class="dialog-actions">
+            <button @click="confirmDelete = false" class="dialog-btn-cancel">Cancel</button>
+            <button @click="handleDelete" class="dialog-btn-delete">Delete</button>
           </div>
         </div>
       </div>
-    </transition>
+    </Transition>
 
   </div>
 </template>
-
-
 
 <script setup>
 import { ref, onMounted } from 'vue'
@@ -173,6 +150,7 @@ const visible = ref(false)
 const copyStatus = ref(null)
 const showEdit = ref(false)
 const confirmDelete = ref(false)
+const error = ref(false)
 
 async function fetchDetails() {
   loading.value = true
@@ -185,9 +163,7 @@ async function fetchDetails() {
       password: await vault.decryptField(rawData.password),
       username: await vault.decryptField(rawData.username)
     }
-
   } catch (err) {
-    console.error('Fetch error:', err)
     error.value = true
     router.push('/')
   } finally {
@@ -213,55 +189,103 @@ async function copy(text, type) {
   try {
     await navigator.clipboard.writeText(text)
     copyStatus.value = type
-
-    setTimeout(() => {
-      copyStatus.value = null
-    }, 3000)
-
-    // clean clipboard after 6 seconds
+    setTimeout(() => { copyStatus.value = null }, 3000)
     setTimeout(async () => {
       try {
         const current = await navigator.clipboard.readText()
-
-        if (current === text) {
-          await navigator.clipboard.writeText('')
-        }
-      } catch (err) {
-        console.warn('Error cleaning clipboard:', err)
-      }
+        if (current === text) await navigator.clipboard.writeText('')
+      } catch (err) {}
     }, 6000)
-
-  } catch (err) {
-    console.error('Error copying to clipboard:', err)
-  }
+  } catch (err) {}
 }
 
 function formatDate(dateStr) {
   if (!dateStr) return 'N/A'
-  return new Date(dateStr).toLocaleDateString(undefined, {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric'
-  })
+  return new Date(dateStr).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
 }
 
 onMounted(fetchDetails)
 </script>
 
 <style scoped>
-.animate-fade-in {
-  animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+@import '@/assets/island-theme.css';
+
+.hero-favicon {
+  width: 72px;
+  height: 72px;
+  border-radius: 20px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
+.hero-title {
+  font-family: 'Outfit', sans-serif;
+  font-size: 26px;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: -0.03em;
+  margin-bottom: 8px;
+}
 
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.hero-badges {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.badge-encrypted {
+  font-size: 11px;
+  font-weight: 700;
+  color: #4ade80;
+  background: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.2);
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-family: 'Outfit', sans-serif;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.badge-dot { color: #94a3b8; font-size: 14px; }
+
+.badge-link {
+  font-size: 12px;
+  font-weight: 700;
+  color: #f97316;
+  font-family: 'Outfit', sans-serif;
+  text-decoration: none;
+  transition: opacity 0.15s;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.badge-link:hover { opacity: 0.7; }
+
+.meta-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #94a3b8;
+  font-family: 'Outfit', sans-serif;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 8px 0;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 </style>

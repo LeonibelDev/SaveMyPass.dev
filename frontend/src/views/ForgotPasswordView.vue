@@ -6,7 +6,7 @@
         <div class="bg-white/80 backdrop-blur-xl rounded-[32px] p-10 shadow-2xl border border-white/20">
           
           <div class="text-center mb-10">
-            <div class="w-16 h-16 bg-slate-800 text-white flex items-center justify-center rounded-[18px] shadow-sm mx-auto mb-6">
+            <div class="w-16 h-16 bg-orange-50 text-brand-orange flex items-center justify-center rounded-[18px] shadow-sm mx-auto mb-6">
               <i class="fa-solid fa-envelope-open-text text-2xl"></i>
             </div>
             <h1 class="text-[28px] font-bold text-slate-900 tracking-tight leading-tight">Reset Password</h1>

@@ -1,10 +1,11 @@
 <template>
   <div class="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6">
-    <!-- Backdrop -->
-    <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-md transition-opacity"></div>
+    <Transition name="fade">
+      <div class="absolute inset-0 bg-black/20 backdrop-blur-sm transition-opacity"></div>
+    </Transition>
 
     <!-- Modal Content -->
-    <div class="relative w-full max-w-lg bg-white rounded-[32px] shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300">
+    <div class="relative w-full max-w-lg bg-white/95 backdrop-blur-xl border border-slate-150 rounded-[28px] shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300">
       <div class="p-8 sm:p-10 text-center">
         
         <!-- Step 1: Explanation -->
@@ -53,7 +54,7 @@
           </div>
 
           <button @click="finish" :disabled="!copied"
-            class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-4 rounded-2xl transition-all active:scale-[0.98] disabled:opacity-40">
+            class="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:shadow-[0_8px_20px_rgba(249,115,22,0.25)] text-white font-bold py-3.5 rounded-xl transition-all shadow-[0_4px_10px_rgba(249,115,22,0.15)] active:scale-[0.98] disabled:opacity-60">
             I've saved my recovery key
           </button>
         </div>

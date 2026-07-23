@@ -1,77 +1,55 @@
 <template>
-  <div class="flex-1 flex flex-col bg-[#F2F2F7] overflow-hidden selection:bg-brand-orange/20">
+  <div class="view-root">
 
-    <!-- Header -->
-    <header class="h-16 border-b border-slate-200/60 bg-white/80 backdrop-blur-xl flex items-center px-4 sm:px-6 z-30 flex-shrink-0">
-      <div class="max-w-5xl mx-auto w-full flex items-center justify-between">
-        <button @click="goBack"
-          class="flex items-center gap-1 text-brand-orange hover:opacity-70 transition-opacity active:opacity-50">
+    <!-- Island Toolbar -->
+    <div class="island-toolbar-wrap">
+      <header class="island-toolbar island-toolbar--titled">
+        <button @click="goBack" class="btn-back">
           <i class="fa-solid fa-chevron-left text-sm"></i>
-          <span class="text-[17px] font-medium">Notes</span>
+          Notes
         </button>
-
-        <button @click="save" :disabled="!title.trim() || saving"
-          class="h-9 px-4 text-brand-orange font-bold text-[17px] disabled:opacity-30 transition-all active:opacity-50">
-          {{ saving ? 'Creating…' : 'Save' }}
-        </button>
-      </div>
-    </header>
-
-    <!-- Editor Container -->
-    <div class="flex-1 overflow-hidden flex flex-col">
-      
-      <!-- Formatting Toolbar -->
-      <div class="bg-white/50 backdrop-blur-md border-b border-slate-100 px-4 sm:px-8 py-2 sticky top-0 z-20 overflow-x-auto no-scrollbar">
-        <div class="max-w-5xl mx-auto flex items-center gap-1.5 min-w-max">
-          <button @click="format('bold')" 
-            class="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-slate-100 text-slate-600 transition-all active:scale-90" title="Bold">
-            <i class="fa-solid fa-bold text-[13px]"></i>
-          </button>
-          <button @click="format('italic')" 
-            class="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-slate-100 text-slate-600 transition-all active:scale-90" title="Italic">
-            <i class="fa-solid fa-italic text-[13px]"></i>
-          </button>
-          <button @click="format('underline')" 
-            class="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-slate-100 text-slate-600 transition-all active:scale-90" title="Underline">
-            <i class="fa-solid fa-underline text-[13px]"></i>
-          </button>
-          <div class="w-px h-5 bg-slate-200 mx-1.5"></div>
-          <button @click="format('insertUnorderedList')" 
-            class="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-slate-100 text-slate-600 transition-all active:scale-90" title="Bullets">
-            <i class="fa-solid fa-list-ul text-[13px]"></i>
-          </button>
-          <button @click="format('insertOrderedList')" 
-            class="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-slate-100 text-slate-600 transition-all active:scale-90" title="Numbers">
-            <i class="fa-solid fa-list-ol text-[13px]"></i>
-          </button>
-          <div class="w-px h-5 bg-slate-200 mx-1.5"></div>
-          <button @click="format('justifyLeft')" 
-            class="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-slate-100 text-slate-600 transition-all active:scale-90">
-            <i class="fa-solid fa-align-left text-[13px]"></i>
-          </button>
-          <button @click="format('justifyCenter')" 
-            class="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-slate-100 text-slate-600 transition-all active:scale-90">
-            <i class="fa-solid fa-align-center text-[13px]"></i>
+        <div class="toolbar-actions">
+          <button @click="save" :disabled="!title.trim() || saving" class="btn-primary">
+            {{ saving ? 'Creating…' : 'Save' }}
           </button>
         </div>
+      </header>
+    </div>
+
+    <!-- Island Formatting Toolbar -->
+    <div class="format-toolbar-wrap">
+      <div class="format-toolbar">
+        <button @click="format('bold')"                class="fmt-btn" title="Bold"><i class="fa-solid fa-bold"></i></button>
+        <button @click="format('italic')"              class="fmt-btn" title="Italic"><i class="fa-solid fa-italic"></i></button>
+        <button @click="format('underline')"           class="fmt-btn" title="Underline"><i class="fa-solid fa-underline"></i></button>
+        <div class="fmt-divider"></div>
+        <button @click="format('insertUnorderedList')" class="fmt-btn" title="Bullets"><i class="fa-solid fa-list-ul"></i></button>
+        <button @click="format('insertOrderedList')"   class="fmt-btn" title="Numbers"><i class="fa-solid fa-list-ol"></i></button>
+        <div class="fmt-divider"></div>
+        <button @click="format('justifyLeft')"         class="fmt-btn"><i class="fa-solid fa-align-left"></i></button>
+        <button @click="format('justifyCenter')"       class="fmt-btn"><i class="fa-solid fa-align-center"></i></button>
       </div>
+    </div>
 
-      <!-- Main Editor -->
-      <main class="flex-1 overflow-y-auto bg-white no-scrollbar">
-        <div class="max-w-4xl mx-auto px-6 sm:px-12 py-10 sm:py-16">
-
-          <!-- Title input -->
-          <input v-model="title" type="text" placeholder="Note Title"
-            class="w-full text-[32px] sm:text-[40px] font-bold text-slate-900 tracking-tight bg-transparent border-none outline-none placeholder:text-slate-100 mb-6 focus:placeholder:text-slate-50 transition-all" />
-
-          <!-- Body editor -->
-          <div ref="bodyRef" v-once contenteditable="true" @input="onInput" @keydown="handleKeydown"
-            data-placeholder="Start writing your secure note…"
-            class="w-full min-h-[500px] outline-none text-[17px] text-slate-700 leading-relaxed font-medium empty:before:content-[attr(data-placeholder)] empty:before:text-slate-200 editor-content">
-          </div>
-
-        </div>
-      </main>
+    <!-- Editor island -->
+    <div class="editor-area">
+      <div class="editor-inner">
+        <input
+          v-model="title"
+          type="text"
+          placeholder="Note Title"
+          class="editor-title-input"
+        />
+        <div
+          ref="bodyRef"
+          v-once
+          contenteditable="true"
+          @input="onInput"
+          @keydown="handleKeydown"
+          data-placeholder="Start writing your secure note…"
+          class="editor-body"
+        ></div>
+      </div>
     </div>
 
   </div>
@@ -90,11 +68,7 @@ const bodyRef = ref(null)
 const saving = ref(false)
 
 const goBack = () => router.push('/notes')
-
-const onInput = () => {
-  body.value = bodyRef.value.innerHTML
-}
-
+const onInput = () => { body.value = bodyRef.value.innerHTML }
 const format = (cmd, val = null) => {
   document.execCommand(cmd, false, val)
   onInput()
@@ -102,22 +76,10 @@ const format = (cmd, val = null) => {
 }
 
 const handleKeydown = (e) => {
-  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'b') {
-    e.preventDefault()
-    format('bold')
-  }
-  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'i') {
-    e.preventDefault()
-    format('italic')
-  }
-  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'u') {
-    e.preventDefault()
-    format('underline')
-  }
-  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
-    e.preventDefault()
-    save()
-  }
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'b') { e.preventDefault(); format('bold') }
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'i') { e.preventDefault(); format('italic') }
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'u') { e.preventDefault(); format('underline') }
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') { e.preventDefault(); save() }
 }
 
 const save = async () => {
@@ -135,23 +97,38 @@ const save = async () => {
 </script>
 
 <style scoped>
-.editor-content:focus {
+@import '@/assets/island-theme.css';
+
+.editor-title-input {
+  width: 100%;
+  font-family: 'Outfit', sans-serif;
+  font-size: 32px;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: -0.03em;
+  background: transparent;
+  border: none;
   outline: none;
+  margin-bottom: 20px;
+}
+.editor-title-input::placeholder { color: #e2e8f0; }
+
+.editor-body {
+  width: 100%;
+  min-height: 500px;
+  outline: none;
+  font-size: 15px;
+  color: #334155;
+  line-height: 1.8;
+  font-weight: 500;
 }
 
-:deep(.editor-content ul) {
-  list-style-type: disc;
-  padding-left: 1.5rem;
-  margin: 1rem 0;
+.editor-body:empty::before {
+  content: attr(data-placeholder);
+  color: #cbd5e1;
 }
 
-:deep(.editor-content ol) {
-  list-style-type: decimal;
-  padding-left: 1.5rem;
-  margin: 1rem 0;
-}
-
-:deep(.editor-content b), :deep(.editor-content strong) {
-  font-weight: 700;
-}
+:deep(.editor-body ul) { list-style-type: disc; padding-left: 1.5rem; margin: 1rem 0; }
+:deep(.editor-body ol) { list-style-type: decimal; padding-left: 1.5rem; margin: 1rem 0; }
+:deep(.editor-body b), :deep(.editor-body strong) { font-weight: 700; color: #0f172a; }
 </style>

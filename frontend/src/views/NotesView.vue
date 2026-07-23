@@ -1,131 +1,98 @@
 <template>
-  <div class="flex-1 flex flex-col overflow-hidden bg-[#F2F2F7]">
+  <div class="view-root">
 
-    <!-- Header -->
-    <header
-      class="h-16 border-b border-slate-200/60 flex items-center px-4 sm:px-6 justify-between flex-shrink-0 bg-white/80 backdrop-blur-xl z-20">
-      <div class="flex items-center gap-4 sm:gap-8 flex-1 max-w-4xl">
-        <h1 class="text-[17px] font-bold text-slate-900 tracking-tight hidden xs:block">
-          Notes
-        </h1>
-
-        <!-- Search Bar -->
-        <div class="relative flex-1 max-w-sm group">
-          <span
-            class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400 group-focus-within:text-brand-orange transition-colors pointer-events-none">
-            <i class="fa-solid fa-magnifying-glass text-[12px]"></i>
-          </span>
-          <input ref="searchInput" v-model="searchQuery" type="text" placeholder="Search notes"
-            class="w-full bg-[#E3E3E8] border-none rounded-xl pl-9 pr-4 sm:pr-16 py-2 text-[15px] font-medium text-slate-700 focus:bg-white focus:ring-4 focus:ring-brand-orange/10 focus:outline-none transition-all placeholder:text-slate-500" />
-          <div class="absolute inset-y-0 right-0 pr-2.5 flex items-center gap-1 pointer-events-none">
-            <kbd class="hidden sm:flex items-center gap-0.5 group-focus-within:opacity-0 transition-opacity">
-              <span
-                class="inline-flex items-center justify-center h-5 min-w-[20px] px-1 bg-white border border-slate-200 rounded-[5px] text-[10px] font-bold text-slate-400 shadow-sm">⌘</span>
-              <span
-                class="inline-flex items-center justify-center h-5 min-w-[20px] px-1 bg-white border border-slate-200 rounded-[5px] text-[10px] font-bold text-slate-400 shadow-sm">K</span>
-            </kbd>
+    <!-- Island Toolbar -->
+    <div class="island-toolbar-wrap">
+      <header class="island-toolbar">
+        <div class="flex items-center gap-4 flex-1 min-w-0">
+          <h1 class="toolbar-title">Notes</h1>
+          <!-- Search -->
+          <div class="toolbar-search-wrap group">
+            <i class="fa-solid fa-magnifying-glass toolbar-search-icon"></i>
+            <input
+              ref="searchInput"
+              v-model="searchQuery"
+              type="text"
+              placeholder="Search notes…"
+              class="toolbar-search-input"
+            />
           </div>
         </div>
-      </div>
+        <div class="toolbar-actions">
+          <router-link to="/notes/new" class="btn-primary">
+            <i class="fa-solid fa-plus text-xs"></i>
+            <span class="hidden sm:inline">New Note</span>
+          </router-link>
+        </div>
+      </header>
+    </div>
 
-      <div class="flex items-center gap-3 ml-3 sm:ml-0">
-        <router-link to="/notes/new"
-          class="h-9 w-9 sm:w-auto sm:px-5 bg-brand-orange hover:bg-brand-orange-hover text-white font-bold rounded-xl transition-all shadow-sm flex items-center justify-center sm:gap-2 active:scale-95 text-[12px]">
-          <i class="fa-solid fa-plus text-[11px]"></i>
-          <span class="hidden sm:inline">New Note</span>
-        </router-link>
-      </div>
-    </header>
+    <!-- Loading -->
+    <div v-if="loading && notes.length === 0" class="flex-1 flex items-center justify-center">
+      <div class="loading-spinner"></div>
+    </div>
 
-    <!-- Main -->
-    <main v-if="loading && notes.length === 0" class="flex-1 flex items-center justify-center">
-      <div class="w-8 h-8 border-[3px] border-slate-200 border-t-brand-orange rounded-full animate-spin"></div>
-    </main>
-
-    <main v-else-if="notes.length === 0" class="flex-1 overflow-y-auto no-scrollbar">
-      <div class="max-w-5xl mx-auto py-10 sm:py-20 px-4 sm:px-8">
-
-        <!-- Empty State -->
-        <div
-          class="flex flex-col items-center justify-center text-center py-16 sm:py-24 bg-white rounded-[24px] border border-slate-200/60 shadow-sm px-6">
-          <!-- Icon -->
-          <div class="w-20 h-20 bg-orange-50 rounded-[20px] flex items-center justify-center mb-8">
-            <i class="fa-solid fa-note-sticky text-3xl text-brand-orange"></i>
+    <!-- Empty state -->
+    <div v-else-if="notes.length === 0" class="view-main">
+      <div class="content-container">
+        <div class="empty-state" style="padding-top: 100px;">
+          <div class="empty-icon">
+            <i class="fa-solid fa-file-lines text-[28px] text-slate-500"></i>
           </div>
-
-          <!-- Title -->
-          <h2 class="font-bold text-slate-900 text-xl tracking-tight mb-3">
-            Secure Workspace
-          </h2>
-
-          <!-- Description -->
-          <p class="text-[15px] text-slate-500 font-medium max-w-[320px] leading-relaxed mb-10">
-            Store sensitive documents, recovery keys, or personal thoughts behind your master encryption.
-          </p>
-
-          <!-- CTA -->
-          <router-link to="/notes/new"
-            class="h-11 px-8 bg-brand-orange hover:bg-brand-orange-hover text-white font-bold rounded-xl transition-all shadow-sm flex items-center gap-3 text-[14px] active:scale-95">
-            <i class="fa-solid fa-plus text-[11px]"></i>
+          <h3 class="empty-title">Secure Workspace</h3>
+          <p class="empty-desc">Store sensitive documents, recovery keys, or personal thoughts behind your master encryption.</p>
+          <router-link to="/notes/new" class="btn-primary">
+            <i class="fa-solid fa-plus text-xs"></i>
             Create first note
           </router-link>
         </div>
-
       </div>
-    </main>
+    </div>
 
-    <main v-else class="flex-1 overflow-y-auto px-4 sm:px-8 py-6 sm:py-10 no-scrollbar">
-      <div class="max-w-7xl mx-auto">
+    <!-- Notes grid -->
+    <main v-else class="view-main">
+      <div style="max-width: 1100px; margin: 0 auto;">
 
-        <!-- Filter Info -->
-        <div v-if="searchQuery" class="mb-6 flex items-center justify-between px-1">
-          <p class="text-[13px] text-slate-400 font-semibold">
-            Found <span class="text-slate-900">{{ filteredNotes.length }}</span> results
-          </p>
-          <button @click="searchQuery = ''"
-            class="text-[13px] font-bold text-brand-orange hover:underline">Clear</button>
+        <!-- Filter info -->
+        <div v-if="searchQuery" class="section-header">
+          <span class="section-label">
+            {{ filteredNotes.length }} results for "{{ searchQuery }}"
+          </span>
+          <button @click="searchQuery = ''" class="btn-ghost" style="height:28px; padding: 0 10px; font-size: 12px;">
+            Clear
+          </button>
         </div>
 
-        <div v-if="filteredNotes.length === 0" class="py-20 text-center">
+        <!-- No results -->
+        <div v-if="filteredNotes.length === 0" class="empty-state">
+          <div class="empty-icon"><i class="fa-solid fa-folder-open text-[24px] text-slate-500"></i></div>
+          <h3 class="empty-title">No notes match</h3>
+          <p class="empty-desc">Try a different keyword.</p>
+        </div>
+
+        <!-- Grid -->
+        <div v-else class="notes-grid">
           <div
-            class="w-16 h-16 bg-white rounded-[20px] border border-slate-200/60 flex items-center justify-center mx-auto mb-4 shadow-sm">
-            <i class="fa-solid fa-magnifying-glass text-slate-200 text-xl"></i>
-          </div>
-          <h3 class="font-bold text-slate-900 mb-1">No notes match</h3>
-          <p class="text-[14px] text-slate-400">Try a different keyword.</p>
-        </div>
-
-        <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
-          <div v-for="note in filteredNotes" :key="note.id"
-            class="bg-white rounded-[20px] border border-slate-200/60 p-5 sm:p-6 hover:border-brand-orange/30 cursor-pointer transition-all hover:shadow-md active:bg-slate-50 group flex flex-col h-[200px] sm:h-[220px]"
-            @click="goToDetail(note.id)">
-
-            <div class="flex justify-between items-start mb-4">
-              <div
-                class="w-10 h-10 bg-slate-50 rounded-xl flex items-center justify-center group-hover:scale-105 transition-transform">
-                <i class="fa-solid fa-file-lines text-slate-400 group-hover:text-brand-orange transition-colors"></i>
+            v-for="note in filteredNotes"
+            :key="note.id"
+            class="note-card"
+            @click="goToDetail(note.id)"
+          >
+            <div class="note-card-head">
+              <div class="note-card-icon">
+                <i class="fa-solid fa-file-lines"></i>
               </div>
-              <span class="text-[10px] font-bold uppercase tracking-wider text-slate-300">
-                {{ formatDate(note.updatedAt || note.createdAt) }}
-              </span>
+              <span class="note-card-date">{{ formatDate(note.updatedAt || note.createdAt) }}</span>
             </div>
-
-            <h3
-              class="font-bold text-slate-900 text-[16px] mb-2 group-hover:text-brand-orange transition-colors line-clamp-1 tracking-tight">
-              {{ note.title }}
-            </h3>
-
-            <p class="text-[13px] text-slate-400 leading-relaxed font-medium line-clamp-3 sm:line-clamp-4 flex-1"
-              v-text="stripHtml(note.content)">
-            </p>
-
-            <div
-              class="mt-4 pt-4 border-t border-slate-50 flex items-center justify-between opacity-0 group-hover:opacity-100 transition-all transform translate-y-2 group-hover:translate-y-0">
-              <span class="text-[11px] font-bold text-brand-orange uppercase tracking-wider">Open Note</span>
-              <i class="fa-solid fa-chevron-right text-[10px] text-brand-orange"></i>
+            <h3 class="note-card-title">{{ note.title }}</h3>
+            <p class="note-card-preview">{{ stripHtml(note.content) }}</p>
+            <div class="note-card-footer">
+              <span>Open Note</span>
+              <i class="fa-solid fa-chevron-right text-[10px]"></i>
             </div>
           </div>
         </div>
+
       </div>
     </main>
   </div>
@@ -153,20 +120,17 @@ const filteredNotes = computed(() => {
   )
 })
 
-function goToDetail(id) {
-  router.push(`/notes/${id}`)
-}
+function goToDetail(id) { router.push(`/notes/${id}`) }
 
 function formatDate(dateStr) {
   if (!dateStr) return ''
-  const date = new Date(dateStr)
-  return new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric' }).format(date)
+  return new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric' }).format(new Date(dateStr))
 }
 
 function stripHtml(html) {
-  const tmp = document.createElement("DIV");
-  tmp.innerHTML = html;
-  return tmp.textContent || tmp.innerText || "";
+  const tmp = document.createElement('DIV')
+  tmp.innerHTML = html
+  return tmp.textContent || tmp.innerText || ''
 }
 
 function handleGlobalKey(e) {
@@ -175,8 +139,127 @@ function handleGlobalKey(e) {
     searchInput.value?.focus()
   }
 }
+
 onMounted(() => {
   useNotes.fetchNotes()
   window.addEventListener('keydown', handleGlobalKey)
 })
 </script>
+
+<style scoped>
+@import '@/assets/island-theme.css';
+
+.notes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 12px;
+  animation: fadeUp 0.3s ease forwards;
+}
+
+.note-card {
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 16px;
+  padding: 18px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: flex;
+  flex-direction: column;
+  min-height: 180px;
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.05), inset 0 1px 0 rgba(255, 255, 255, 1);
+  backdrop-filter: blur(12px);
+}
+
+.note-card:hover {
+  border-color: rgba(249, 115, 22, 0.25);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 1);
+}
+
+.note-card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.note-card-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #64748b;
+  font-size: 13px;
+  transition: color 0.15s;
+}
+
+.note-card:hover .note-card-icon { color: #f97316; }
+
+.note-card-date {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #94a3b8;
+  font-family: 'Outfit', sans-serif;
+}
+
+.note-card-title {
+  font-family: 'Outfit', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  color: #0f172a;
+  letter-spacing: -0.02em;
+  margin-bottom: 6px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  transition: color 0.15s;
+}
+
+.note-card:hover .note-card-title { color: #f97316; }
+
+.note-card-preview {
+  font-size: 12px;
+  color: #64748b;
+  font-weight: 500;
+  line-height: 1.6;
+  flex: 1;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+}
+
+.note-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(0, 0, 0, 0.04);
+  font-size: 11px;
+  font-weight: 700;
+  color: #f97316;
+  font-family: 'Outfit', sans-serif;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  opacity: 0;
+  transform: translateY(4px);
+  transition: all 0.15s;
+}
+
+.note-card:hover .note-card-footer {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+</style>

@@ -5,23 +5,23 @@
     </Transition>
 
     <div class="relative w-full max-w-[400px] animate-scale-in">
-      <div class="bg-white/90 backdrop-blur-xl rounded-[28px] p-8 shadow-2xl border border-white/20">
+      <div class="bg-white/95 backdrop-blur-xl rounded-[28px] p-8 shadow-2xl border border-slate-150">
 
-        <h2 class="text-[22px] font-bold text-slate-900 tracking-tight mb-1 text-center">Edit Credential</h2>
-        <p class="text-[14px] text-slate-500 font-medium mb-8 text-center">
+        <h2 class="text-[22px] font-black text-slate-900 tracking-tight mb-1 text-center font-outfit">Edit Credential</h2>
+        <p class="text-[14px] text-slate-400 font-semibold mb-8 text-center font-outfit">
           Update the info for this account
         </p>
 
         <!-- Error -->
         <div v-if="error"
-          class="mb-6 p-3 bg-rose-50 border border-rose-100 rounded-xl text-rose-500 text-[13px] font-semibold text-center">
+          class="mb-6 p-3 bg-rose-50 border border-rose-100 rounded-xl text-rose-600 text-[13px] font-bold text-center">
           {{ error }}
         </div>
 
         <form @submit.prevent="handleSubmit" class="space-y-4">
 
-          <div class="space-y-1">
-            <label class="block text-[12px] font-bold text-slate-400 ml-1">Platform</label>
+          <div class="space-y-1.5">
+            <label class="block text-[11px] font-bold text-slate-405 uppercase tracking-wider ml-1 font-outfit">Platform</label>
             <div class="relative">
               <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400 pointer-events-none">
                 <img v-if="form.site"
@@ -29,31 +29,31 @@
                   :alt="form.site" class="w-5 h-5 object-contain" @error="$event.target.style.display = 'none'" />
                 <i v-else class="fa-solid fa-globe text-[14px]"></i>
               </span>
-              <input v-model="form.site" type="text" required placeholder="e.g. GitHub.com"
-                class="w-full bg-slate-100/50 border-none rounded-xl pl-10 pr-4 py-3 text-[15px] font-medium text-slate-900 focus:bg-white focus:ring-4 focus:ring-brand-orange/10 focus:outline-none transition-all" />
+              <input v-model="form.site" type="text" required placeholder="e.g. github.com"
+                class="w-full bg-[#F1F5F9]/50 border border-slate-200/50 rounded-xl pl-10 pr-4 py-3 text-[15px] font-medium text-slate-900 focus:bg-white focus:ring-4 focus:ring-brand-orange-glow focus:border-brand-orange focus:outline-none transition-all" />
             </div>
           </div>
 
-          <div class="space-y-1">
-            <label class="block text-[12px] font-bold text-slate-400 ml-1">Username / Email</label>
+          <div class="space-y-1.5">
+            <label class="block text-[11px] font-bold text-slate-405 uppercase tracking-wider ml-1 font-outfit">Username / Email</label>
             <div class="relative">
               <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400 pointer-events-none">
-                <i class="fa-solid fa-at text-[14px]"></i>
+                <i class="fa-solid fa-envelope text-[14px]"></i>
               </span>
               <input v-model="form.username" type="text" required placeholder="john@example.com"
-                class="w-full bg-slate-100/50 border-none rounded-xl pl-10 pr-4 py-3 text-[15px] font-medium text-slate-900 focus:bg-white focus:ring-4 focus:ring-brand-orange/10 focus:outline-none transition-all" />
+                class="w-full bg-[#F1F5F9]/50 border border-slate-200/50 rounded-xl pl-10 pr-4 py-3 text-[15px] font-medium text-slate-900 focus:bg-white focus:ring-4 focus:ring-brand-orange-glow focus:border-brand-orange focus:outline-none transition-all" />
             </div>
           </div>
 
-          <div class="space-y-1">
-            <label class="block text-[12px] font-bold text-slate-400 ml-1">Password</label>
+          <div class="space-y-1.5">
+            <label class="block text-[11px] font-bold text-slate-405 uppercase tracking-wider ml-1 font-outfit">Password</label>
             <div class="relative">
               <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400 pointer-events-none">
                 <i class="fa-solid fa-lock text-[14px]"></i>
               </span>
               <input v-model="form.password" :type="showPw ? 'text' : 'password'" required placeholder="Your password"
-                class="w-full bg-slate-100/50 border-none rounded-xl pl-10 pr-24 py-3 text-[15px] font-medium text-slate-900 focus:bg-white focus:ring-4 focus:ring-brand-orange/10 focus:outline-none transition-all" />
-              <div class="absolute inset-y-0 right-0 flex items-center gap-1 pr-2">
+                class="w-full bg-[#F1F5F9]/50 border border-slate-200/50 rounded-xl pl-10 pr-20 py-3 text-[15px] font-medium text-slate-900 focus:bg-white focus:ring-4 focus:ring-brand-orange-glow focus:border-brand-orange focus:outline-none transition-all placeholder:text-slate-400" />
+              <div class="absolute inset-y-0 right-0 flex items-center pr-2">
                 <button type="button" @click="showPw = !showPw"
                   class="p-2 text-slate-400 hover:text-brand-orange transition-colors">
                   <i :class="showPw ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye'" class="text-[14px]"></i>
@@ -63,13 +63,13 @@
           </div>
 
           <button type="submit" :disabled="loading"
-            class="w-full mt-4 bg-brand-orange hover:bg-brand-orange-hover text-white font-bold py-3.5 rounded-xl transition-all shadow-sm active:scale-[0.98] flex items-center justify-center gap-2 text-[15px] disabled:opacity-60">
+            class="w-full mt-6 bg-gradient-to-r from-orange-500 to-orange-600 hover:shadow-[0_8px_20px_rgba(249,115,22,0.25)] text-white font-bold py-3.5 rounded-xl transition-all shadow-[0_4px_10px_rgba(249,115,22,0.15)] active:scale-[0.98] flex items-center justify-center gap-2 text-[15px] disabled:opacity-60 font-outfit">
             <i v-if="loading" class="fa-solid fa-circle-notch animate-spin"></i>
             {{ loading ? 'Saving…' : 'Save Changes' }}
           </button>
 
           <button type="button" @click="$emit('close')"
-            class="w-full py-2 text-brand-orange font-semibold text-[15px] hover:opacity-70 transition-opacity">
+            class="w-full py-2 text-brand-orange font-bold text-[14px] hover:opacity-75 transition-opacity font-outfit">
             Cancel
           </button>
 

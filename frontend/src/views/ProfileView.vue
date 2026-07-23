@@ -1,131 +1,110 @@
 <template>
-  <div class="flex-1 flex flex-col bg-[#F2F2F7] overflow-hidden selection:bg-brand-orange/20">
+  <div class="view-root">
 
-    <!-- Header -->
-    <header class="h-16 border-b border-slate-200/60 bg-white/80 backdrop-blur-xl flex items-center px-6 z-20 flex-shrink-0">
-      <div class="max-w-4xl mx-auto w-full flex items-center justify-between">
-        <h1 class="text-[17px] font-bold text-slate-900">Settings</h1>
-        <div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-[12px] font-bold text-slate-500">
-          {{ initials }}
-        </div>
-      </div>
-    </header>
+    <!-- Island Toolbar -->
+    <div class="island-toolbar-wrap">
+      <header class="island-toolbar island-toolbar--titled">
+        <h1 class="toolbar-title">Settings</h1>
+        <div class="account-avatar-mini">{{ initials }}</div>
+      </header>
+    </div>
 
     <!-- Main -->
-    <main class="flex-1 overflow-y-auto py-8 px-4 sm:px-6 no-scrollbar">
-      <div class="max-w-2xl mx-auto space-y-8 animate-fade-in">
+    <main class="view-main">
+      <div class="content-container" style="max-width: 680px;">
 
-        <!-- Status Messages -->
-        <Transition name="fade">
-          <div v-if="error || success" class="mb-4">
-            <div v-if="error" class="p-4 bg-rose-50 border border-rose-100 rounded-2xl text-rose-500 text-[14px] font-semibold flex items-center gap-3">
-              <i class="fa-solid fa-circle-exclamation"></i>
-              {{ error }}
+        <!-- Status alerts -->
+        <Transition name="dialog-slide">
+          <div v-if="error || success" class="mb-3">
+            <div v-if="error" class="island-alert island-alert--error">
+              <i class="fa-solid fa-triangle-exclamation"></i> {{ error }}
             </div>
-            <div v-if="success" class="p-4 bg-emerald-50 border border-emerald-100 rounded-2xl text-emerald-600 text-[14px] font-semibold flex items-center gap-3">
-              <i class="fa-solid fa-circle-check"></i>
-              {{ success }}
+            <div v-if="success" class="island-alert island-alert--success">
+              <i class="fa-solid fa-circle-check"></i> {{ success }}
             </div>
           </div>
         </Transition>
 
-        <!-- Account Section -->
-        <div>
-          <p class="text-[13px] font-semibold text-slate-500 uppercase tracking-wider ml-4 mb-2">Account</p>
-          <div class="bg-white rounded-[20px] border border-slate-200/60 overflow-hidden shadow-sm divide-y divide-slate-100">
-            <div class="px-5 py-4 flex items-center justify-between gap-4">
-              <div class="flex items-center gap-4">
-                <div class="w-8 h-8 rounded-lg bg-blue-500 text-white flex items-center justify-center">
-                  <i class="fa-solid fa-user text-[14px]"></i>
-                </div>
-                <div>
-                  <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Name</p>
-                  <p class="text-[16px] font-medium text-slate-900">{{ auth.name }}</p>
-                </div>
+        <!-- Account section -->
+        <p class="section-group-label">Account</p>
+        <div class="island-card" style="margin-bottom: 14px;">
+          <div class="info-row">
+            <div class="flex items-center gap-3">
+              <div class="info-icon info-icon--blue"><i class="fa-solid fa-user"></i></div>
+              <div>
+                <p class="info-label">Name</p>
+                <p class="info-value">{{ auth.name }}</p>
               </div>
             </div>
-            <div class="px-5 py-4 flex items-center justify-between gap-4">
-              <div class="flex items-center gap-4">
-                <div class="w-8 h-8 rounded-lg bg-emerald-500 text-white flex items-center justify-center">
-                  <i class="fa-solid fa-envelope text-[14px]"></i>
-                </div>
-                <div>
-                  <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Email</p>
-                  <p class="text-[16px] font-medium text-slate-900">{{ auth.email }}</p>
-                </div>
+          </div>
+          <div class="info-row">
+            <div class="flex items-center gap-3">
+              <div class="info-icon info-icon--emerald"><i class="fa-solid fa-envelope text-sm"></i></div>
+              <div>
+                <p class="info-label">Email</p>
+                <p class="info-value">{{ auth.email }}</p>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Security Section -->
-        <div>
-          <p class="text-[13px] font-semibold text-slate-500 uppercase tracking-wider ml-4 mb-2">Security & Master Password</p>
-          <div class="bg-white rounded-[20px] border border-slate-200/60 overflow-hidden shadow-sm">
-            <div class="px-5 py-6">
-              <form @submit.prevent="handleChangePassword" class="space-y-4">
-                <div>
-                  <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5 ml-1">Current Password</label>
-                  <input v-model="form.oldPassword" type="password" required placeholder="••••••••"
-                    class="w-full bg-slate-100/50 border-none rounded-xl px-4 py-3 text-[15px] font-medium text-slate-900 focus:bg-white focus:ring-4 focus:ring-brand-orange/10 focus:outline-none transition-all" />
-                </div>
-
-                <div class="grid sm:grid-cols-2 gap-4">
-                  <div>
-                    <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5 ml-1">New Password</label>
-                    <input v-model="form.newPassword" type="password" required placeholder="••••••••"
-                      class="w-full bg-slate-100/50 border-none rounded-xl px-4 py-3 text-[15px] font-medium text-slate-900 focus:bg-white focus:ring-4 focus:ring-brand-orange/10 focus:outline-none transition-all" />
-                  </div>
-                  <div>
-                    <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5 ml-1">Confirm New</label>
-                    <input v-model="form.confirmNewPassword" type="password" required placeholder="••••••••"
-                      class="w-full bg-slate-100/50 border-none rounded-xl px-4 py-3 text-[15px] font-medium text-slate-900 focus:bg-white focus:ring-4 focus:ring-brand-orange/10 focus:outline-none transition-all" />
-                  </div>
-                </div>
-
-                <div class="pt-2">
-                  <button type="submit" :disabled="loading"
-                    class="w-full bg-brand-orange hover:bg-brand-orange-hover text-white font-bold py-3.5 rounded-xl transition-all active:scale-[0.98] flex items-center justify-center gap-2 text-[15px] disabled:opacity-60 shadow-sm">
-                    <i v-if="loading" class="fa-solid fa-circle-notch animate-spin"></i>
-                    <i v-else class="fa-solid fa-key text-[14px]"></i>
-                    {{ loading ? 'Updating...' : 'Change Master Password' }}
-                  </button>
-                  <p class="text-[12px] text-slate-400 text-center mt-4 px-4 font-medium leading-relaxed">
-                    Changing your password will re-encrypt your entire vault. This may take a moment.
-                  </p>
-                </div>
-              </form>
+        <!-- Security section -->
+        <p class="section-group-label">Security &amp; Master Password</p>
+        <div class="island-card island-card--padded" style="margin-bottom: 14px;">
+          <form @submit.prevent="handleChangePassword" class="form-group">
+            <div class="form-field">
+              <label class="island-input-label">Current Password</label>
+              <input v-model="form.oldPassword" type="password" required placeholder="••••••••" class="island-input" />
             </div>
+            <div class="form-row-2">
+              <div class="form-field">
+                <label class="island-input-label">New Password</label>
+                <input v-model="form.newPassword" type="password" required placeholder="••••••••" class="island-input" />
+              </div>
+              <div class="form-field">
+                <label class="island-input-label">Confirm New</label>
+                <input v-model="form.confirmNewPassword" type="password" required placeholder="••••••••" class="island-input" />
+              </div>
+            </div>
+            <button type="submit" :disabled="loading" class="btn-primary" style="width:100%; justify-content:center; height:44px; font-size:14px;">
+              <i v-if="loading" class="fa-solid fa-circle-notch fa-spin"></i>
+              <i v-else class="fa-solid fa-key"></i>
+              {{ loading ? 'Updating…' : 'Change Master Password' }}
+            </button>
+            <p class="form-hint">Changing your password will re-encrypt your entire vault. This may take a moment.</p>
+          </form>
+        </div>
+
+        <!-- Privacy & Help section -->
+        <p class="section-group-label">Privacy &amp; Help</p>
+        <div class="island-card" style="margin-bottom: 14px;">
+          <a
+            href="https://savemypass.dev/security"
+            target="_blank"
+            class="info-row"
+            style="text-decoration:none; cursor:pointer;"
+          >
+            <div class="flex items-center gap-3 flex-1">
+              <div class="info-icon info-icon--dark"><i class="fa-solid fa-shield"></i></div>
+              <span class="info-value">Security Whitepaper</span>
+            </div>
+            <i class="fa-solid fa-chevron-right" style="color:#334155; font-size:11px;"></i>
+          </a>
+          <div class="info-row">
+            <div class="flex items-center gap-3 flex-1">
+              <div class="info-icon" style="background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.07); color: #64748b;">
+                <i class="fa-solid fa-code-branch"></i>
+              </div>
+              <span class="info-value">Version</span>
+            </div>
+            <span style="font-size:13px; font-weight:700; color:#475569; font-family:'Outfit',sans-serif;">1.2.0-stable</span>
           </div>
         </div>
 
-        <!-- Privacy & Info -->
-        <div>
-          <p class="text-[13px] font-semibold text-slate-500 uppercase tracking-wider ml-4 mb-2">Privacy & Help</p>
-          <div class="bg-white rounded-[20px] border border-slate-200/60 overflow-hidden shadow-sm divide-y divide-slate-100">
-            <a href="https://savemypass.dev/security" target="_blank" class="px-5 py-4 flex items-center justify-between hover:bg-slate-50 active:bg-slate-100 transition-all group">
-              <div class="flex items-center gap-4">
-                <div class="w-8 h-8 rounded-lg bg-slate-800 text-white flex items-center justify-center">
-                  <i class="fa-solid fa-shield-halved text-[14px]"></i>
-                </div>
-                <span class="text-[15px] font-medium text-slate-900">Security Whitepaper</span>
-              </div>
-              <i class="fa-solid fa-chevron-right text-slate-300 text-[12px] group-hover:translate-x-1 transition-transform"></i>
-            </a>
-            <div class="px-5 py-4 flex items-center justify-between">
-              <div class="flex items-center gap-4">
-                <div class="w-8 h-8 rounded-lg bg-slate-100 text-slate-500 flex items-center justify-center">
-                  <i class="fa-solid fa-code-branch text-[14px]"></i>
-                </div>
-                <span class="text-[15px] font-medium text-slate-900">Version</span>
-              </div>
-              <span class="text-[14px] font-bold text-slate-400">1.2.0-stable</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="text-center py-4">
-          <p class="text-[12px] font-semibold text-slate-300 uppercase tracking-[0.2em]">SaveMyPass Zero-Knowledge Architecture</p>
+        <div style="text-align:center; padding: 8px 0 24px;">
+          <p style="font-size:10px; font-weight:700; color:#334155; letter-spacing:0.18em; text-transform:uppercase; font-family:'Outfit',sans-serif;">
+            SaveMyPass Zero-Knowledge Architecture
+          </p>
         </div>
 
       </div>
@@ -155,16 +134,13 @@ async function handleChangePassword() {
     error.value = 'Passwords do not match.'
     return
   }
-
   if (form.newPassword.length < 8) {
     error.value = 'New password must be at least 8 characters.'
     return
   }
-
   loading.value = true
   error.value = null
   success.value = null
-
   try {
     await vault.rotateVault(form.newPassword)
     success.value = 'Vault re-encrypted and password updated successfully.'
@@ -172,10 +148,67 @@ async function handleChangePassword() {
     form.newPassword = ''
     form.confirmNewPassword = ''
   } catch (e) {
-    console.error(e)
     error.value = e?.response?.data?.message || e.message || 'Failed to update password.'
   } finally {
     loading.value = false
   }
 }
 </script>
+
+<style scoped>
+@import '@/assets/island-theme.css';
+
+.account-avatar-mini {
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.09);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #94a3b8;
+  font-size: 11px;
+  font-weight: 700;
+  font-family: 'Outfit', sans-serif;
+}
+
+.info-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.07);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  flex-shrink: 0;
+}
+.info-icon--blue    { background: rgba(59,130,246,0.1); border-color: rgba(59,130,246,0.15); color: #60a5fa; }
+.info-icon--emerald { background: rgba(34,197,94,0.1);  border-color: rgba(34,197,94,0.15);  color: #4ade80; }
+.info-icon--dark    { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.09); color: #94a3b8; }
+
+.form-group { display: flex; flex-direction: column; gap: 14px; }
+
+.form-field { display: flex; flex-direction: column; }
+
+.form-row-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+@media (max-width: 520px) {
+  .form-row-2 { grid-template-columns: 1fr; }
+}
+
+.form-hint {
+  font-size: 12px;
+  color: #475569;
+  font-weight: 500;
+  text-align: center;
+  line-height: 1.5;
+  padding: 0 8px;
+}
+</style>

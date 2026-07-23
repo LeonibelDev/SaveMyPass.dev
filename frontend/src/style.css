@@ -1,12 +1,12 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800;900&display=swap');
 
 :root {
-  --ios-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
-  --ios-shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08);
-  --ios-shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.12);
-  --ios-radius: 20px;
-  --ios-radius-lg: 28px;
-  --ios-radius-sm: 12px;
+  --ios-shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.03);
+  --ios-shadow-md: 0 10px 30px rgba(0, 0, 0, 0.05);
+  --ios-shadow-lg: 0 20px 40px rgba(249, 115, 22, 0.05);
+  --ios-radius: 24px;
+  --ios-radius-lg: 32px;
+  --ios-radius-sm: 14px;
 }
 
 *,
@@ -19,13 +19,19 @@
 }
 
 body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  background: #F2F2F7; /* iOS System Gray 6 */
-  color: #1C1C1E; /* iOS System Label */
+  font-family: 'Inter', -apple-system, sans-serif;
+  background: #F8FAFC;
+  color: #0F172A;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   min-height: 100vh;
-  letter-spacing: -0.011em;
+  letter-spacing: -0.01em;
+}
+
+/* Typography Headings */
+h1, h2, h3, h4, .font-heading {
+  font-family: 'Outfit', sans-serif !important;
+  letter-spacing: -0.02em;
 }
 
 #app {
@@ -34,32 +40,111 @@ body {
   flex-direction: column;
 }
 
-.ios-card {
+/* Glassmorphism Panel helper */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+/* Orange Glow shadow helpers */
+.glow-orange-sm {
+  box-shadow: 0 0 15px rgba(249, 115, 22, 0.08);
+}
+.glow-orange-md {
+  box-shadow: 0 10px 30px rgba(249, 115, 22, 0.12);
+}
+
+/* Premium Buttons & Cards */
+.btn-premium {
+  background: linear-gradient(135deg, #F97316 0%, #EA580C 100%);
+  color: white;
+  border-radius: var(--ios-radius-sm);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 14px rgba(249, 115, 22, 0.3);
+}
+
+.btn-premium:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(249, 115, 22, 0.4);
+}
+
+.btn-premium:active {
+  transform: scale(0.97);
+  box-shadow: 0 2px 10px rgba(249, 115, 22, 0.2);
+}
+
+.btn-premium-outline {
+  background: transparent;
+  color: #F97316;
+  border: 2px solid #F97316;
+  border-radius: var(--ios-radius-sm);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-premium-outline:hover {
+  background: rgba(249, 115, 22, 0.05);
+  transform: translateY(-2px);
+}
+
+.btn-premium-outline:active {
+  transform: scale(0.97);
+}
+
+.card-premium {
   background: #FFFFFF;
   border-radius: var(--ios-radius);
   box-shadow: var(--ios-shadow-sm);
-  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s ease;
+  border: 1px solid rgba(226, 232, 240, 0.6);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.ios-card:active {
-  transform: scale(0.98);
-  box-shadow: none;
+.card-premium:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--ios-shadow-md), 0 15px 30px rgba(249, 115, 22, 0.03);
+  border-color: rgba(249, 115, 22, 0.15);
 }
 
-.ios-btn {
-  border-radius: var(--ios-radius-sm);
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.ios-btn:active {
-  opacity: 0.7;
-  transform: scale(0.96);
-}
-
+/* Custom Scrollbar */
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
 .no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(203, 213, 225, 0.8);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.8);
+}
+
+/* Keyframes */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
